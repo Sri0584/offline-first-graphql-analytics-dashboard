@@ -1,3 +1,4 @@
+import { prisma } from "@/lib/prisma";
 import { createSchema, createYoga } from "graphql-yoga";
 
 const typeDefs = /* GraphQL */ `
@@ -6,24 +7,43 @@ const typeDefs = /* GraphQL */ `
 		name: String!
 		status: String!
 		createdAt: String!
+		tasks: [Task!]!
+	}
+
+	type Task {
+		id: ID!
+		title: String!
+		status: String!
+		createdAt: String!
 	}
 
 	type Query {
 		projects: [Project!]!
 	}
+
+	type Mutation {
+		createProject(name: String!): Project!
+	}
 `;
 
-const projects = [
-	{
-		id: "1",
-		name: "Portfolio Analytics Platform",
-		status: "ACTIVE",
-		createdAt: new Date().toISOString(),
-	},
-];
 const resolvers = {
 	Query: {
-		projects: () => projects,
+		projects: async () => {
+			return prisma.project.findMany({
+				orderBy: { createdAt: "desc" },
+				include: { tasks: true },
+			});
+		},
+	},
+	Mutation: {
+		createProject: async (_: unknown, args: { name: string }) => {
+			return prisma.project.create({
+				data: {
+					name: args.name,
+				},
+				include: { tasks: true },
+			});
+		},
 	},
 };
 const yoga = createYoga({
