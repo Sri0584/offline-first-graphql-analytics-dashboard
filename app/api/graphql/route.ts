@@ -19,10 +19,14 @@ const typeDefs = /* GraphQL */ `
 
 	type Query {
 		projects: [Project!]!
+		project(id: ID!): Project
 	}
 
 	type Mutation {
 		createProject(name: String!): Project!
+		createTask(projectId: ID!, title: String!): Task!
+		updateTaskStatus(taskId: ID!, status: String!): Task!
+		deleteTask(taskId: ID!): Task!
 	}
 `;
 
@@ -34,6 +38,12 @@ const resolvers = {
 				include: { tasks: true },
 			});
 		},
+		project: async (_: any, args: { id: string }) => {
+			return prisma.project.findUnique({
+				where: { id: args.id },
+				include: { tasks: true },
+			});
+		},
 	},
 	Mutation: {
 		createProject: async (_: unknown, args: { name: string }) => {
@@ -42,6 +52,28 @@ const resolvers = {
 					name: args.name,
 				},
 				include: { tasks: true },
+			});
+		},
+		createTask: async (_: any, args: { projectId: string; title: string }) => {
+			return prisma.task.create({
+				data: {
+					title: args.title,
+					projectId: args.projectId,
+				},
+			});
+		},
+		updateTaskStatus: async (
+			_: any,
+			args: { taskId: string; status: string },
+		) => {
+			return prisma.task.update({
+				where: { id: args.taskId },
+				data: { status: args.status },
+			});
+		},
+		deleteTask: async (_: unknown, args: { taskId: string }) => {
+			return prisma.task.delete({
+				where: { id: args.taskId },
 			});
 		},
 	},
