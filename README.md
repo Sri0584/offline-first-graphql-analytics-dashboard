@@ -1,4 +1,15 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+Dashboard page
+↓
+GraphQL query: projects
+↓
+Node.js GraphQL API route
+↓
+Prisma database
+↓
+shadcn table/card UI
+↓
+unit tests
 
 ## Getting Started
 
