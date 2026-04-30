@@ -16,6 +16,53 @@ export const GET_PROJECTS = gql`
 		}
 	}
 `;
+export const CREATE_PROJECT = gql`
+	mutation CreateProject($name: String!) {
+		createProject(name: $name) {
+			__typename
+			id
+			name
+			status
+			tasks {
+				__typename
+				id
+				title
+				status
+			}
+		}
+	}
+`;
+
+export const UPDATE_PROJECT_NAME = gql`
+	mutation UpdateProjectName($projectId: ID!, $name: String!) {
+		updateProjectName(projectId: $projectId, name: $name) {
+			__typename
+			id
+			name
+			status
+		}
+	}
+`;
+
+export const UPDATE_PROJECT_STATUS = gql`
+	mutation UpdateProjectStatus($projectId: ID!, $status: String!) {
+		updateProjectStatus(projectId: $projectId, status: $status) {
+			__typename
+			id
+			name
+			status
+		}
+	}
+`;
+
+export const DELETE_PROJECT = gql`
+	mutation DeleteProject($projectId: ID!) {
+		deleteProject(projectId: $projectId) {
+			__typename
+			id
+		}
+	}
+`;
 export const CREATE_TASK = gql`
 	mutation CreateTask($projectId: ID!, $title: String!) {
 		createTask(projectId: $projectId, title: $title) {

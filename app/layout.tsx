@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { AppApolloProvider } from "@/components/apollo-provider";
 import { ServiceWorkerRegister } from "@/components/service-worker-register";
+import { Toaster } from "@/components/ui/sonner";
 
 export const metadata: Metadata = {
 	title: "Offline GraphQL Analytics Dashboard",
@@ -16,6 +17,7 @@ export default function RootLayout({
 	return (
 		<html lang='en'>
 			<body>
+				<Toaster />
 				{/* <ServiceWorkerRegister /> */}
 				<AppApolloProvider>{children}</AppApolloProvider>
 			</body>
