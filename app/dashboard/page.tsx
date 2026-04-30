@@ -1,210 +1,163 @@
 "use client";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { gql } from "@apollo/client/core";
 import { useQuery, useMutation } from "@apollo/client/react";
-import { useState } from "react";
-
-const GET_PROJECTS = gql`
-	query GetProjects {
-		projects {
-			id
-			name
-			status
-			tasks {
-				id
-				title
-				status
-			}
-		}
-	}
-`;
-const CREATE_TASK = gql`
-	mutation CreateTask($projectId: ID!, $title: String!) {
-		createTask(projectId: $projectId, title: $title) {
-			id
-			title
-			status
-		}
-	}
-`;
-const UPDATE_TASK_STATUS = gql`
-	mutation UpdateTaskStatus($taskId: ID!, $status: String!) {
-		updateTaskStatus(taskId: $taskId, status: $status) {
-			id
-			status
-		}
-	}
-`;
-const DELETE_TASK = gql`
-	mutation deleteTask($taskId: ID!) {
-		deleteTask(taskId: $taskId) {
-			id
-		}
-	}
-`;
-type Task = {
-	id: string;
-	title: string;
-	status: string;
-};
-
-type Project = {
-	id: string;
-	name: string;
-	status: string;
-	tasks: Task[];
-};
+import { useEffect, useState } from "react";
+import { CREATE_TASK, GET_PROJECTS } from "../utils/gql-queries";
+import {
+	AnalyticsObj,
+	CreateTaskResponse,
+	CreateTaskVariables,
+	Project,
+} from "../utils/types";
+import CardComponent from "@/components/dashboard/CardComponent";
+import ProjectComponent from "@/components/dashboard/ProjectComponent";
+import { gql } from "@apollo/client";
+import { addtoQueue, clearQueue, getQueue } from "@/lib/offline-queue";
+import AnalyticsComponent from "@/components/dashboard/AnalyticsComponent";
 
 const DashboardPage = () => {
+	const isOffline = typeof navigator !== "undefined" && !navigator.onLine;
 	const { data, loading, error } = useQuery<{ projects: Project[] }>(
 		GET_PROJECTS,
 	);
+	const [analytics, setAnalytics] = useState<AnalyticsObj>({
+		totalProjects: 0,
+		totalTasks: 0,
+		completedTasks: 0,
+		completionRate: 0,
+	});
 	const [titles, setTitles] = useState<Record<string, string>>({});
+	const [createTask] = useMutation<CreateTaskResponse, CreateTaskVariables>(
+		CREATE_TASK,
+	);
 
-	const [createTask] = useMutation(CREATE_TASK, {
-		refetchQueries: ["GetProjects"],
-	});
-	const [updateTaskStatus] = useMutation(UPDATE_TASK_STATUS, {
-		refetchQueries: ["GetProjects"],
-	});
-	const [deleteTask] = useMutation(DELETE_TASK, {
-		refetchQueries: ["GetProjects"],
-	});
-	const handleClick = (id: string) => {
-		const title = titles[id];
+	const handleClick = async (id: string) => {
+		const title = titles[id]?.trim();
 
-		if (!title?.trim()) return;
+		if (!title) return;
+		if (isOffline) {
+			await addtoQueue({
+				__typename: "Task",
+				id: `offline-${Date.now()}`,
+				title: title,
+				status: "TODO",
+			});
 
-		createTask({
-			variables: {
-				projectId: id,
-				title: title.trim(),
-			},
-		});
+			alert("Saved offline. Will sync later.");
+			return;
+		} else {
+			createTask({
+				variables: {
+					projectId: id,
+					title: title,
+				},
+				optimisticResponse: {
+					createTask: {
+						__typename: "Task",
+						id: `temp-${Date.now()}`,
+						title: title,
+						status: "TODO",
+					},
+				},
+				update(cache, { data }) {
+					const newTask = data?.createTask;
+					if (!newTask) return;
+
+					cache.modify({
+						id: cache.identify({
+							__typename: "Project",
+							id: id,
+						}),
+						fields: {
+							tasks(existingTaskRefs = []) {
+								const newTaskRef = cache.writeFragment({
+									data: newTask,
+									fragment: gql`
+										fragment NewTask on Task {
+											__typename
+											id
+											title
+											status
+										}
+									`,
+								});
+
+								return [...existingTaskRefs, newTaskRef];
+							},
+						},
+					});
+				},
+			});
+		}
 
 		setTitles((prev) => ({
 			...prev,
 			[id]: "",
 		}));
 	};
+
+	useEffect(() => {
+		const sync = async () => {
+			if (!navigator.onLine) return;
+
+			const queued = await getQueue();
+
+			for (const task of queued) {
+				await createTask({
+					variables: {
+						projectId: task.projectId,
+						title: task.title,
+					},
+				});
+			}
+
+			if (queued.length > 0) {
+				await clearQueue();
+				console.log("Synced offline tasks");
+			}
+		};
+
+		window.addEventListener("online", sync);
+
+		return () => window.removeEventListener("online", sync);
+	}, [createTask]);
+
+	useEffect(() => {
+		if (!data?.projects) return;
+
+		const worker = new Worker(
+			new URL("../../workers/analytics.worker.ts", import.meta.url),
+		);
+
+		worker.postMessage(data.projects);
+
+		worker.onmessage = (event) => {
+			setAnalytics(event.data);
+		};
+
+		return () => worker.terminate();
+	}, [data]);
+
 	if (loading) return <main className='p-6'>Loading dashboard...</main>;
+
 	if (error) return <main className='p-6'>Error: {error.message}</main>;
+
 	return (
 		<main className='min-h-screen bg-background p-6'>
 			<div className='mx-auto max-w-5xl space-y-6'>
-				<div>
-					<h1 className='text-3xl font-bold'>Analytics Dashboard</h1>
-					<p className='text-muted-foreground'>
-						GraphQL-powered project insights
-					</p>
-				</div>
-
-				<div className='grid gap-4 md:grid-cols-3'>
-					<Card>
-						<CardHeader>
-							<CardTitle>Total Projects</CardTitle>
-						</CardHeader>
-						<CardContent className='text-3xl font-bold'>
-							{data?.projects.length ?? 0}
-						</CardContent>
-					</Card>
-				</div>
-
-				<Card>
-					<CardHeader>
-						<CardTitle>Projects</CardTitle>
-					</CardHeader>
-					<CardContent>
-						<div className='space-y-3'>
-							{data?.projects.map((project) => (
-								<div key={project.id} className='rounded-lg border p-4'>
-									<div className='font-medium'>{project.name}</div>
-
-									<div className='text-sm text-muted-foreground'>
-										Status: {project.status}
-									</div>
-
-									<div className='mt-4 space-y-2'>
-										<p className='text-sm font-medium'>Tasks</p>
-
-										{project.tasks.length === 0 ?
-											<p className='text-sm text-muted-foreground'>
-												No tasks yet
-											</p>
-										:	project.tasks.map((task) => (
-												<div
-													key={task.id}
-													className='rounded-md border p-2 text-sm flex justify-between'
-												>
-													<div>
-														<span
-															className={
-																task.status === "DONE" ?
-																	"line-through text-muted-foreground"
-																:	""
-															}
-														>
-															{task.title}
-														</span>
-													</div>
-													<div className='flex justify-between gap-1'>
-														<button
-															className='text-xs bg-secondary px-2 py-1 rounded'
-															onClick={() => {
-																updateTaskStatus({
-																	variables: {
-																		taskId: task.id,
-																		status:
-																			task.status === "DONE" ? "TODO" : "DONE",
-																	},
-																});
-															}}
-														>
-															{task.status === "DONE" ? "Undo" : "Done"}
-														</button>
-														<button
-															className='rounded bg-destructive px-2 py-1 text-xs text-destructive-foreground'
-															onClick={() => {
-																deleteTask({
-																	variables: {
-																		taskId: task.id,
-																	},
-																});
-															}}
-														>
-															Delete
-														</button>
-													</div>
-												</div>
-											))
-										}
-									</div>
-
-									<div className='mt-3 flex gap-2'>
-										<input
-											className='rounded border px-2 py-1 text-sm'
-											placeholder='New task...'
-											value={titles[project.id] || ""}
-											onChange={(e) =>
-												setTitles((prev) => ({
-													...prev,
-													[project.id]: e.target.value,
-												}))
-											}
-										/>
-
-										<button
-											className='rounded bg-primary px-3 text-sm text-primary-foreground'
-											onClick={() => handleClick(project.id)}
-										>
-											Add
-										</button>
-									</div>
-								</div>
-							))}
-						</div>
-					</CardContent>
-				</Card>
+				<AnalyticsComponent analytics={analytics} />
+				<CardComponent title='Projects'>
+					<div className='space-y-3'>
+						{data?.projects.map((project) => (
+							<ProjectComponent
+								key={project.id}
+								project={project}
+								titles={titles}
+								setTitles={setTitles}
+								handleClick={handleClick}
+							/>
+						))}
+					</div>
+				</CardComponent>
 			</div>
 		</main>
 	);
