@@ -71,70 +71,85 @@ Optimistic UI
 Offline queue
 Service Worker
 Web Worker
-WebSockets
+Server-Sent Events (SSE) with GraphQL Yoga and Apollo Client
+
 Subscriptions - what exactly did the subscriptions do here,
-Before subscriptions:
+Client subscribes to live updates
+Using:
+useSubscription(TASK_CREATED_SUBSCRIPTION)
 
-Client asks server for data
-→ one-time response
-→ connection ends
+the client establishes a persistent subscription with Apollo Client to continuously listen for newly created tasks in real time, instead of performing a one-time data fetch like a traditional GraphQL query.
 
-After subscriptions:
+Persistent real-time connection using SSE
+The application uses Server-Sent Events (SSE) with GraphQL Yoga and Apollo Client to maintain a continuous client-server connection for real-time event streaming.
 
-Client stays connected to server
-→ server can push updates anytime
-User creates task
-      ↓
-Server publishes event
-      ↓
-All connected clients receive update
-      ↓
-Apollo cache updates automatically
-      ↓
-UI updates instantly
+Unlike standard HTTP request-response cycles:
 
-1. Client subscribes
-This code: useSubscription(TASK_CREATED_SUBSCRIPTION) tells Apollo: "Keep listening for new tasks" Unlike queries: query → request once
-subscriptions are: persistent connection
-2. WebSocket connection opens
-This part: GraphQLWsLink(...) creates: Browser ⇄ Server socket connection using:ws://localhost:3000/api/graphql
-This connection stays alive.
-Why WebSocket?
-Normal HTTP: request → response → closed
-WebSocket:always-open communication tunnel
-Perfect for:
-chat
-notifications
+HTTP → request → response → connection closed
+
+SSE enables:
+
+Server → continuous event stream → connected client
+
+This architecture is ideal for:
+
 live dashboards
-multiplayer apps
-3. Client subscribes to taskCreated
-Your schema:
+notifications
+collaborative applications
+activity feeds
+real-time analytics
+GraphQL subscription schema definition
+The GraphQL schema exposes a live subscription endpoint:
 type Subscription {
   taskCreated: Task!
 }
-means:"There is a live event called taskCreated"
-This resolver:
+
+This defines a real-time event channel that clients can subscribe to in order to receive newly created task data instantly.
+
+Subscription resolver registration
+The subscription resolver connects incoming subscribers to the PubSub event stream:
 Subscription: {
   taskCreated: {
     subscribe: () =>
       pubsub.asyncIterableIterator([TASK_CREATED]),
   },
 },
-basically says: "When TASK_CREATED happens, notify all subscribers"
-5. Mutation publishes event
-This is the most important part:
+
+This tells the GraphQL server to notify all active subscribers whenever a TASK_CREATED event is published.
+
+Publishing real-time events
+When a task is created, the mutation publishes an event through the PubSub system:
 await pubsub.publish(TASK_CREATED, {
   taskCreated: task,
 });
-Meaning: "Broadcast this new task to everyone listening"
-What is PubSub? Think of PubSub like: Event bus / notification center
-Publish pubsub.publish(...) = send event
-Subscribe subscribe(...) = listen for event
-6. Apollo receives event
-This runs: onData: ({ client, data }) => {
-Apollo receives:newTask
-7. Apollo cache updates
-This part: client.cache.modify(...) injects the task directly into cache. No refetch.No reload.No polling.
+
+This broadcasts the newly created task to all connected clients subscribed to the taskCreated event stream.
+
+PubSub event-driven architecture
+The PubSub layer acts as an internal event bus for real-time communication:
+publish(...) → emit event
+subscribe(...) → listen for event
+
+This decouples mutation execution from real-time delivery logic and enables scalable event-driven updates.
+
+Apollo Client receives live updates
+On the frontend, the subscription listener receives incoming task events through:
+onData: ({ client, data }) => {
+
+Apollo Client immediately processes the streamed subscription payload without requiring additional API requests.
+
+Normalized Apollo cache synchronization
+The application updates the Apollo normalized cache directly using:
+client.cache.modify(...)
+
+This injects the incoming task into the existing cached project state, enabling:
+
+instant UI synchronization
+zero refetching
+no manual reloads
+no polling overhead
+
+As a result, multiple connected clients remain synchronized in real time with minimal network cost.
 Real-time sync - 
 
 ## Getting Started
