@@ -17,7 +17,7 @@ const ProjectComponent = ({
 	titles,
 	setTitles,
 }: ProjectComponentProps) => {
-	const { id, name, status } = project;
+	const { id, status } = project;
 	const isDisabled = status !== "ACTIVE";
 	const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		setTitles((prev) => ({
@@ -28,7 +28,7 @@ const ProjectComponent = ({
 
 	return (
 		<div key={id} className='rounded-lg border p-4'>
-			<ProjectCRUD id={id} status={status} name={name} />
+			<ProjectCRUD project={project} />
 
 			<div className='mt-4 space-y-2'>
 				<p className='text-sm font-medium'>Tasks</p>

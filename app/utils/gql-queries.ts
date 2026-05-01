@@ -40,6 +40,12 @@ export const UPDATE_PROJECT_NAME = gql`
 			id
 			name
 			status
+			tasks {
+				__typename
+				id
+				title
+				status
+			}
 		}
 	}
 `;
@@ -51,6 +57,12 @@ export const UPDATE_PROJECT_STATUS = gql`
 			id
 			name
 			status
+			tasks {
+				__typename
+				id
+				title
+				status
+			}
 		}
 	}
 `;
@@ -87,6 +99,18 @@ export const DELETE_TASK = gql`
 		deleteTask(taskId: $taskId) {
 			__typename
 			id
+		}
+	}
+`;
+
+export const TASK_CREATED_SUBSCRIPTION = gql`
+	subscription TaskCreated {
+		taskCreated {
+			__typename
+			id
+			title
+			status
+			projectId
 		}
 	}
 `;

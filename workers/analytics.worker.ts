@@ -9,12 +9,12 @@ self.onmessage = (event) => {
 		(acc: number, p: Project) => acc + p.tasks.length,
 		0,
 	);
-
 	const completedTasks = projects.reduce(
 		(acc: number, p: Project) =>
 			acc + p.tasks.filter((t: Task) => t.status === "DONE").length,
 		0,
 	);
+	const todoTasks = totalTasks - completedTasks;
 
 	const completionRate =
 		totalTasks === 0 ? 0 : Math.round((completedTasks / totalTasks) * 100);
@@ -22,6 +22,7 @@ self.onmessage = (event) => {
 	self.postMessage({
 		totalProjects,
 		totalTasks,
+		todoTasks,
 		completedTasks,
 		completionRate,
 	});

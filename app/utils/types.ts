@@ -2,7 +2,7 @@ export type Task = {
 	__typename: "Task";
 	id: string;
 	title: string;
-	status: string;
+	status: TaskStatus;
 };
 
 export type Project = {
@@ -24,6 +24,45 @@ export type CreateTaskVariables = {
 export type AnalyticsObj = {
 	totalProjects: number;
 	totalTasks: number;
+	todoTasks: number;
 	completedTasks: number;
 	completionRate: number;
 };
+export type CreateProjectResponse = {
+	createProject: Project;
+};
+
+export type CreateProjectVariables = {
+	name: string;
+};
+
+export type UpdateProjectNameResponse = {
+	updateProjectName: Project;
+};
+
+export type UpdateProjectNameVariables = {
+	projectId: string;
+	name: string;
+};
+
+export type UpdateProjectStatusResponse = {
+	updateProjectStatus: Project;
+};
+
+export type UpdateProjectStatusVariables = {
+	projectId: string;
+	status: string;
+};
+
+export type DeleteProjectResponse = {
+	deleteProject: {
+		__typename: "Project";
+		id: string;
+	};
+};
+
+export type DeleteProjectVariables = {
+	projectId: string;
+};
+
+export type TaskStatus = "TODO" | "IN_PROGRESS" | "DONE";

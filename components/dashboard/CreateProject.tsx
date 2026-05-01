@@ -3,23 +3,76 @@ import { useMutation } from "@apollo/client/react";
 import { useState } from "react";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
+import { gql } from "@apollo/client";
+import {
+	CreateProjectResponse,
+	CreateProjectVariables,
+} from "@/app/utils/types";
+import { toast } from "sonner";
 
 const CreateProject = () => {
 	const [projectName, setProjectName] = useState("");
-	const [createProject] = useMutation(CREATE_PROJECT, {
-		refetchQueries: ["GetProjects"],
-	});
-	const handleCreateProject = () => {
-		if (!projectName.trim()) return;
+	const [createProject] = useMutation<
+		CreateProjectResponse,
+		CreateProjectVariables
+	>(CREATE_PROJECT);
 
-		createProject({
-			variables: {
-				name: projectName.trim(),
-			},
-		});
+	const handleCreateProject = () => {
+		const name = projectName.trim();
+		if (!name) return;
+		try {
+			createProject({
+				variables: {
+					name,
+				},
+				optimisticResponse: {
+					createProject: {
+						__typename: "Project",
+						id: `temp-project-${Date.now()}`,
+						name,
+						status: "ACTIVE",
+						tasks: [],
+					},
+				},
+				update(cache, { data }) {
+					const newProject = data?.createProject;
+					if (!newProject) return;
+
+					cache.modify({
+						fields: {
+							projects(existingProjectRefs = []) {
+								const newProjectRef = cache.writeFragment({
+									data: newProject,
+									fragment: gql`
+										fragment NewProject on Project {
+											__typename
+											id
+											name
+											status
+											tasks {
+												__typename
+												id
+												title
+												status
+											}
+										}
+									`,
+								});
+
+								return [newProjectRef, ...existingProjectRefs];
+							},
+						},
+					});
+				},
+			});
+			toast.success("Project created successfully!");
+		} catch (error) {
+			toast.error(`Project creation failed ${error}`);
+		}
 
 		setProjectName("");
 	};
+
 	return (
 		<div className='flex gap-2'>
 			<Input

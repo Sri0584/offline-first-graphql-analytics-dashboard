@@ -1,5 +1,6 @@
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { pubsub, TASK_CREATED } from "@/lib/subpub";
 import { createSchema, createYoga } from "graphql-yoga";
 import { getServerSession } from "next-auth";
 
@@ -17,6 +18,7 @@ const typeDefs = /* GraphQL */ `
 		title: String!
 		status: String!
 		createdAt: String!
+		projectId: ID!
 	}
 
 	type Query {
@@ -33,32 +35,53 @@ const typeDefs = /* GraphQL */ `
 		updateTaskStatus(taskId: ID!, status: String!): Task!
 		deleteTask(taskId: ID!): Task!
 	}
+	type Subscription {
+		taskCreated: Task!
+	}
 `;
 
 const resolvers = {
 	Query: {
-		projects: async () => {
+		projects: async (_: unknown, __: unknown, context: any) => {
+			//When you log in, the browser stores an auth cookie.Every request to /api/graphql automatically includes that cookie.
+			//Then on the server:const session = await getServerSession(authOptions);gets the logged-in user from the cookie.
+			const userId = context.session?.user?.id;
+
+			if (!userId) throw new Error("Unauthorized");
 			return prisma.project.findMany({
+				where: {
+					userId: userId,
+				},
 				include: {
 					tasks: true,
-					user: true,
 				},
 				orderBy: {
 					createdAt: "desc",
 				},
 			});
 		},
-		project: async (_: any, args: { id: string }) => {
-			return prisma.project.findUnique({
-				where: { id: args.id },
-				include: { tasks: true },
+		project: async (_: unknown, args: { id: string }, context: any) => {
+			const userId = context.session?.user?.id;
+			if (!userId) throw new Error("Unauthorized");
+			return prisma.project.findFirst({
+				where: {
+					id: args.id,
+					userId,
+				},
+				include: {
+					tasks: true,
+				},
 			});
+		},
+	},
+	Subscription: {
+		taskCreated: {
+			subscribe: () => pubsub.asyncIterableIterator([TASK_CREATED]),
 		},
 	},
 	Mutation: {
 		createProject: async (_: unknown, args: { name: string }, context: any) => {
 			const userId = context.session?.user?.id;
-			console.log(userId, "userId");
 
 			if (!userId) {
 				throw new Error("Unauthorized");
@@ -102,12 +125,19 @@ const resolvers = {
 			});
 		},
 		createTask: async (_: any, args: { projectId: string; title: string }) => {
-			return prisma.task.create({
+			const task = await prisma.task.create({
 				data: {
 					title: args.title,
 					projectId: args.projectId,
+					status: "TODO",
 				},
 			});
+
+			await pubsub.publish(TASK_CREATED, {
+				taskCreated: task,
+			});
+
+			return task;
 		},
 		updateTaskStatus: async (
 			_: any,

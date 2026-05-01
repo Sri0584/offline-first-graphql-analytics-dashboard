@@ -7,59 +7,101 @@ import { useMutation } from "@apollo/client/react";
 import { useState } from "react";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
+import { type Project } from "@/app/utils/types";
+import type { Reference } from "@apollo/client/cache";
+import { toast } from "sonner";
 
-const ProjectCRUD = ({
-	id,
-	status,
-	name,
-}: {
-	id: string;
-	status: string;
-	name: string;
-}) => {
+const ProjectCRUD = ({ project }: { project: Project }) => {
+	const { id, name, status } = project;
 	const [editingProjectId, setEditingProjectId] = useState<string | null>("");
 	const [editProjectName, setEditProjectName] = useState(name);
-	const [updateProjectName] = useMutation(UPDATE_PROJECT_NAME, {
-		refetchQueries: ["GetProjects"],
-	});
-	const [updateProjectStatus] = useMutation(UPDATE_PROJECT_STATUS, {
-		refetchQueries: ["GetProjects"],
-	});
-	const [deleteProject] = useMutation(DELETE_PROJECT, {
-		refetchQueries: ["GetProjects"],
-	});
+	const [updateProjectName] = useMutation(UPDATE_PROJECT_NAME);
+	const [updateProjectStatus] = useMutation(UPDATE_PROJECT_STATUS);
+	const [deleteProject] = useMutation(DELETE_PROJECT);
 
 	const handleUpdateProject = () => {
-		updateProjectStatus({
-			variables: {
-				projectId: id,
-				status: status === "ARCHIVED" ? "ACTIVE" : "ARCHIVED",
-			},
-		});
+		const nextStatus = status === "ARCHIVED" ? "ACTIVE" : "ARCHIVED";
+		try {
+			updateProjectStatus({
+				variables: {
+					projectId: id,
+					status: nextStatus,
+				},
+				optimisticResponse: {
+					updateProjectStatus: {
+						...project,
+						status: nextStatus,
+					},
+				},
+			});
+			toast.success("Project status updated successfully");
+		} catch (error) {
+			toast.error(`Project status updation failed ${error}`);
+		}
 	};
 
 	const handleDeleteProject = () => {
-		deleteProject({
-			variables: {
-				projectId: id,
-			},
-		});
+		try {
+			deleteProject({
+				variables: {
+					projectId: id,
+				},
+				optimisticResponse: {
+					deleteProject: {
+						__typename: "Project",
+						id: id,
+					},
+				},
+				update(cache) {
+					cache.modify({
+						fields: {
+							projects(
+								existingProjectRefs: readonly Reference[] = [],
+								{ readField },
+							) {
+								return existingProjectRefs.filter(
+									(projectRef) => readField("id", projectRef) !== id,
+								);
+							},
+						},
+					});
+				},
+			});
+			toast.success("Project deleted successfully");
+		} catch (error) {
+			toast.error(`Project deletion failed ${error}`);
+		}
 	};
-	const handleSave = () => {
-		updateProjectName({
-			variables: {
-				projectId: id,
-				name: editProjectName.trim(),
-			},
-		});
+	const handleUpdateProjectName = () => {
+		const name = editProjectName.trim();
+		if (!name) return;
+		try {
+			updateProjectName({
+				variables: {
+					projectId: id,
+					name,
+				},
+				optimisticResponse: {
+					updateProjectName: {
+						...project,
+						name,
+					},
+				},
+			});
+			toast.success("Project name updated successfully");
+		} catch (error) {
+			toast.error(`Project name updation failed ${error}`);
+		}
 
 		setEditingProjectId(null);
+		setEditProjectName("");
 	};
 
 	const handleRename = () => {
 		setEditingProjectId(id);
 		setEditProjectName(name);
 	};
+
 	return (
 		<>
 			<div className='font-medium'>{name}</div>
@@ -73,7 +115,7 @@ const ProjectCRUD = ({
 
 					<button
 						className='rounded bg-primary px-3 text-sm text-primary-foreground'
-						onClick={handleSave}
+						onClick={handleUpdateProjectName}
 					>
 						Save
 					</button>

@@ -17,7 +17,7 @@ export default function RootLayout({
 	return (
 		<html lang='en'>
 			<body>
-				<Toaster />
+				<Toaster richColors position='top-right' />
 				{/* <ServiceWorkerRegister /> */}
 				<AppApolloProvider>{children}</AppApolloProvider>
 			</body>

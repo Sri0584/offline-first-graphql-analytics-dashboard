@@ -12,9 +12,9 @@ const LoginPage = () => {
 	const [email, setEmail] = useState(searchParams.get("email") ?? "");
 	const [password, setPassword] = useState("");
 	const router = useRouter();
+
 	const handleLogin = async (e: React.SubmitEvent<HTMLFormElement>) => {
 		e.preventDefault();
-		console.log("came here");
 
 		const result = await signIn("credentials", {
 			email,
@@ -42,19 +42,22 @@ const LoginPage = () => {
 					className='w-full rounded border px-3 py-2'
 					placeholder='Email'
 					value={email}
+					name='email'
+					autoComplete='email'
 					onChange={(e) => setEmail(e.target.value)}
 				/>
 				<Input
 					className='w-full rounded border px-3 py-2'
 					placeholder='Password'
 					type='password'
+					autoComplete='current-password'
 					value={password}
 					onChange={(e) => setPassword(e.target.value)}
 				/>
 				<Button className='w-full rounded bg-primary px-4 py-2 text-primary-foreground'>
 					Login
 				</Button>
-				<p className='text-sm text-muted-foreground'>
+				<p className='text-sm text-muted-foreground align-middle text-center'>
 					Don&apos;t have an account?{" "}
 					<a href='/signup' className='underline'>
 						Sign up
