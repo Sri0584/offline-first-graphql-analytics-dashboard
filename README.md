@@ -10,6 +10,60 @@ Prisma database
 shadcn table/card UI
 ↓
 unit tests
+Frontend:
+
+Next.js App Router
+React Server Components
+TypeScript
+Tailwind CSS
+shadcn/ui
+Apollo Client or urql
+Service Worker for offline cache + background sync
+Web Worker for heavy analytics/chart calculations
+React concurrent features: Suspense, useTransition, useDeferredValue
+
+Backend:
+
+Node.js
+GraphQL Yoga or Apollo Server
+Prisma
+PostgreSQL or DynamoDB
+JWT/Auth.js/Cognito
+Redis optional for caching/rate limits
+Auth + organizations
+Login/signup
+Teams/workspaces
+Role-based access: owner, admin, member
+Project/task management
+CRUD projects/tasks
+GraphQL queries, mutations, pagination, filtering
+Optimistic updates
+Realtime activity feed
+GraphQL subscriptions or polling fallback
+Activity logs: task created, status changed, comment added
+Offline-first mode
+Service Worker caches shell + recent GraphQL responses
+Offline task creation saved to IndexedDB
+Sync queue when back online
+Analytics dashboard
+Charts for completion rate, cycle time, workload
+Web Worker computes heavy aggregations
+Export CSV/PDF
+React performance showcase
+Server Components for dashboard shell/data-heavy pages
+Client Components only where interactive
+Suspense loading boundaries
+useTransition for filters/search
+useDeferredValue for large list search
+
+AWS free/low-cost deployment:
+
+Amplify Hosting for frontend
+Lambda for GraphQL API
+API Gateway
+DynamoDB or RDS free-tier-compatible option
+S3 for file exports
+CloudWatch + AWS Budgets
 
 GraphQL
 Apollo cache
