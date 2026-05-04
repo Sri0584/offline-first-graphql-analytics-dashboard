@@ -1,7 +1,5 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { AppApolloProvider } from "@/components/apollo-provider";
-import { ServiceWorkerRegister } from "@/components/service-worker-register";
 import { Toaster } from "@/components/ui/sonner";
 
 export const metadata: Metadata = {
@@ -18,8 +16,7 @@ export default function RootLayout({
 		<html lang='en'>
 			<body>
 				<Toaster richColors position='top-right' />
-				{/* <ServiceWorkerRegister /> */}
-				<AppApolloProvider>{children}</AppApolloProvider>
+				{children}
 			</body>
 		</html>
 	);
