@@ -1,6 +1,6 @@
 "use client";
 import { useQuery, useMutation, useSubscription } from "@apollo/client/react";
-import React, { Suspense, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { gql } from "@apollo/client";
 import { addtoQueue, clearQueue, getQueue } from "@/lib/offline-queue";
 import {
@@ -20,18 +20,12 @@ import {
 } from "@/app/utils/types";
 import { toast } from "sonner";
 
-const CreateProject = React.lazy(() => import("./CreateProject"));
-const DashboardSkeleton = React.lazy(() => import("./DashboardSkeleton"));
-const KanbanBoard = React.lazy(() => import("./KanbanBoard"));
-const AnalyticsComponent = React.lazy(
-	() => import("@/components/dashboard/AnalyticsComponent"),
-);
-const CardComponent = React.lazy(
-	() => import("@/components/dashboard/CardComponent"),
-);
-const ProjectComponent = React.lazy(
-	() => import("@/components/dashboard/ProjectComponent"),
-);
+import CreateProject from "./CreateProject";
+import DashboardSkeleton from "./DashboardSkeleton";
+import KanbanBoard from "./KanbanBoard";
+import AnalyticsComponent from "@/components/dashboard/AnalyticsComponent";
+import CardComponent from "@/components/dashboard/CardComponent";
+import ProjectComponent from "@/components/dashboard/ProjectComponent";
 
 const DashboardClient = () => {
 	const [isOffline, setIsOffline] = useState(false);
@@ -39,7 +33,8 @@ const DashboardClient = () => {
 	const { data, loading, error } = useQuery<{ projects: Project[] }>(
 		GET_PROJECTS,
 		{
-			fetchPolicy: "network-only", //For auth-based data, use fetchPolicy
+			fetchPolicy: "cache-and-network",
+			nextFetchPolicy: "cache-first",
 		},
 	);
 	const [updateTaskStatus] = useMutation(UPDATE_TASK_STATUS);
@@ -259,21 +254,15 @@ const DashboardClient = () => {
 	return (
 		<main className='min-h-screen bg-background p-6'>
 			<div className='mx-auto max-w-5xl space-y-6'>
-				<Suspense fallback={<div>Loading Charts Component..</div>}>
-					<AnalyticsComponent
-						analytics={analytics}
-						projects={data?.projects ?? []}
-					/>
-				</Suspense>
-				<Suspense fallback={<div>Loading KanbanBoard..</div>}>
-					<KanbanBoard
-						projects={data?.projects ?? []}
-						onMoveTask={handleMoveTask}
-					/>
-				</Suspense>
-				<Suspense fallback={<div>Loading Projects..</div>}>
-					<CreateProject />
-				</Suspense>
+				<AnalyticsComponent
+					analytics={analytics}
+					projects={data?.projects ?? []}
+				/>
+				<KanbanBoard
+					projects={data?.projects ?? []}
+					onMoveTask={handleMoveTask}
+				/>
+				<CreateProject />
 				<CardComponent title='Projects'>
 					<div className='space-y-3'>
 						{data?.projects.map((project) => (
