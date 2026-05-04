@@ -3,9 +3,9 @@ frontend:
   phases:
     preBuild:
       commands:
-        - npm cache clean --force
-        - rm -rf node_modules
-        - npm install
+        - env | grep -e DATABASE_URL -e NEXTAUTH_SECRET -e NEXTAUTH_URL >> .env.production
+        - npm ci
+        - npx prisma generate
         - npx prisma generate
     build:
       commands:
