@@ -1,43 +1,53 @@
 import {
 	ApolloClient,
-	InMemoryCache,
-	HttpLink,
 	ApolloLink,
+	HttpLink,
+	InMemoryCache,
+	Observable,
 } from "@apollo/client";
-import { print } from "graphql";
-import { createClient } from "graphql-sse";
+
+import type { FetchResult } from "@apollo/client";
+
 import { getMainDefinition } from "@apollo/client/utilities";
-// Next.js API routes/route handlers do not support WebSocket upgrades directly. GraphQL Yoga’s recommended subscription transport is SSE, not WebSocket, unless you create a custom Node server.
+import { createClient } from "graphql-sse";
+import { print } from "graphql";
+
 const httpLink = new HttpLink({
 	uri: "/api/graphql",
 });
-const sseLink = {
-	request(operation: any) {
-		return {
-			subscribe(observer: any) {
-				const client = createClient({
-					url: "/api/graphql",
-				});
 
-				const dispose = client.subscribe(
-					{
-						query: print(operation.query),
-						variables: operation.variables,
-					},
-					{
-						next: (data) => observer.next(data),
-						error: (err) => observer.error(err),
-						complete: () => observer.complete(),
-					},
-				);
+const sseClient =
+	typeof window !== "undefined" ?
+		createClient({
+			url: "/api/graphql",
+		})
+	:	null;
 
-				return {
-					unsubscribe: dispose,
-				};
+const sseLink = new ApolloLink((operation) => {
+	return new Observable<FetchResult>((observer) => {
+		if (!sseClient) {
+			observer.complete();
+			return;
+		}
+
+		const unsubscribe = sseClient.subscribe(
+			{
+				query: print(operation.query),
+				variables: operation.variables,
 			},
+			{
+				next: (result) => observer.next(result as FetchResult),
+				error: (error) => observer.error(error),
+				complete: () => observer.complete(),
+			},
+		);
+
+		return () => {
+			unsubscribe();
 		};
-	},
-};
+	});
+});
+
 const splitLink =
 	typeof window !== "undefined" ?
 		ApolloLink.split(
@@ -49,7 +59,7 @@ const splitLink =
 					definition.operation === "subscription"
 				);
 			},
-			sseLink as any,
+			sseLink,
 			httpLink,
 		)
 	:	httpLink;
