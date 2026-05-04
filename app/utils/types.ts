@@ -72,3 +72,16 @@ export type DeleteProjectVariables = {
 };
 
 export type TaskStatus = "TODO" | "IN_PROGRESS" | "DONE";
+export type CreateProjectArgs = {
+	name: string;
+};
+
+export type UpdateTaskStatusArgs = {
+	taskId: string;
+	status: string;
+};
+
+export type CreateTaskArgs = {
+	projectId: string;
+	title: string;
+};
