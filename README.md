@@ -1,3 +1,5 @@
+https://main.d2571517qali19.amplifyapp.com/dashboard
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 Dashboard page
 ↓
