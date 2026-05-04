@@ -57,7 +57,7 @@ const AnalyticsComponent = ({
 		<>
 			<div className='flex justify-between'>
 				<div>
-					<h1 className='text-3xl font-bold'>Analytics Dashboard</h1>
+					<h1 className='min-h-9 text-3xl font-bold leading-tight'>Analytics Dashboard</h1>
 					<p className='text-muted-foreground'>
 						GraphQL-powered project insights
 					</p>
