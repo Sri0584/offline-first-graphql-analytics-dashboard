@@ -170,7 +170,13 @@ const yoga = createYoga({
 		resolvers,
 	}),
 	context: async ({ request }) => {
-		const session = await getServerSession(authOptions);
+		let session: Session | null = null;
+
+		try {
+			session = await getServerSession(authOptions);
+		} catch {
+			session = null;
+		}
 
 		return {
 			session,
