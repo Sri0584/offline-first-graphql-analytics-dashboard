@@ -1,6 +1,7 @@
 "use client";
 import { useQuery, useMutation, useSubscription } from "@apollo/client/react";
-import React, { useEffect, useState } from "react";
+import React, { Suspense, useEffect, useState } from "react";
+import dynamic from "next/dynamic";
 import { gql } from "@apollo/client";
 import { addtoQueue, clearQueue, getQueue } from "@/lib/offline-queue";
 import {
@@ -20,12 +21,15 @@ import {
 } from "@/app/utils/types";
 import { toast } from "sonner";
 
-import CreateProject from "./CreateProject";
 import DashboardSkeleton from "./DashboardSkeleton";
-import KanbanBoard from "./KanbanBoard";
 import AnalyticsComponent from "@/components/dashboard/AnalyticsComponent";
 import CardComponent from "@/components/dashboard/CardComponent";
-import ProjectComponent from "@/components/dashboard/ProjectComponent";
+
+const KanbanBoard = dynamic(() => import("./KanbanBoard"), {
+	loading: () => <div className="h-64 animate-pulse rounded-xl border bg-muted/40" />,
+});
+const CreateProject = dynamic(() => import("./CreateProject"));
+const ProjectComponent = dynamic(() => import("@/components/dashboard/ProjectComponent"));
 
 const DashboardClient = () => {
 	const [isOffline, setIsOffline] = useState(false);
@@ -264,6 +268,9 @@ const DashboardClient = () => {
 				/>
 				<CreateProject />
 				<CardComponent title='Projects'>
+					<Suspense
+						fallback={<div className='h-24 animate-pulse rounded-md bg-muted/40' />}
+					>
 					<div className='space-y-3'>
 						{data?.projects.map((project) => (
 							<ProjectComponent
@@ -275,6 +282,7 @@ const DashboardClient = () => {
 							/>
 						))}
 					</div>
+					</Suspense>
 				</CardComponent>
 			</div>
 		</main>
