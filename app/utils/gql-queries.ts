@@ -82,6 +82,7 @@ export const CREATE_TASK = gql`
 			id
 			title
 			status
+			projectId
 		}
 	}
 `;
@@ -90,7 +91,9 @@ export const UPDATE_TASK_STATUS = gql`
 		updateTaskStatus(taskId: $taskId, status: $status) {
 			__typename
 			id
+			title
 			status
+			projectId
 		}
 	}
 `;

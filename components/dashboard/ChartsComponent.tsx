@@ -34,12 +34,14 @@ const ChartsComponent = ({
 
 	const productivityData = [
 		{ name: "TODO", value: analytics.todoTasks, fill: "#f59e0b" },
+		{ name: "IN_PROGRESS", value: analytics.inProgressTasks, fill: "#3b82f6" },
 		{ name: "DONE", value: analytics.completedTasks, fill: "#22c55e" },
 	];
+
 	return (
 		<div className='grid min-w-0 gap-4 lg:grid-cols-3'>
 			<CardComponent title='Completion Trend'>
-				<div className='h-72 min-h-72 w-full min-w-0'>
+				<div className='h-72 w-full min-w-0 min-h-72'>
 					<ResponsiveContainer width='100%' height='100%'>
 						<LineChart data={completionTrendData}>
 							<CartesianGrid strokeDasharray='3 3' />
@@ -67,7 +69,12 @@ const ChartsComponent = ({
 					</div>
 
 					<div className='h-72 min-h-72 w-full min-w-0'>
-						<ResponsiveContainer width='100%' height='100%'>
+						<ResponsiveContainer
+							width='100%'
+							height='100%'
+							minWidth={0}
+							minHeight={undefined}
+						>
 							<PieChart>
 								<Pie
 									data={productivityData}
@@ -85,7 +92,12 @@ const ChartsComponent = ({
 			</CardComponent>
 			<CardComponent title='Workload by Project'>
 				<div className='h-72 min-h-72 w-full min-w-0'>
-					<ResponsiveContainer width='100%' height='100%'>
+					<ResponsiveContainer
+						width='100%'
+						height='100%'
+						minWidth={0}
+						minHeight={undefined}
+					>
 						<BarChart data={workloadData}>
 							<CartesianGrid strokeDasharray='3 3' />
 							<XAxis dataKey='name' />

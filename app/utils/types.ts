@@ -3,6 +3,7 @@ export type Task = {
 	id: string;
 	title: string;
 	status: TaskStatus;
+	projectId: string;
 };
 
 export type Project = {
@@ -16,6 +17,10 @@ export type CreateTaskResponse = {
 	createTask: Task;
 };
 
+export type TaskCreatedSubscriptionResponse = {
+	taskCreated: Task;
+};
+
 export type CreateTaskVariables = {
 	projectId: string;
 	title: string;
@@ -25,6 +30,7 @@ export type AnalyticsObj = {
 	totalProjects: number;
 	totalTasks: number;
 	todoTasks: number;
+	inProgressTasks: number;
 	completedTasks: number;
 	completionRate: number;
 };

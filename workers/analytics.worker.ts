@@ -14,7 +14,17 @@ self.onmessage = (event) => {
 			acc + p.tasks.filter((t: Task) => t.status === "DONE").length,
 		0,
 	);
-	const todoTasks = totalTasks - completedTasks;
+	const inProgressTasks = projects.reduce(
+		(acc: number, p: Project) =>
+			acc + p.tasks.filter((t: Task) => t.status === "IN_PROGRESS").length,
+		0,
+	);
+
+	const todoTasks = projects.reduce(
+		(acc: number, p: Project) =>
+			acc + p.tasks.filter((t: Task) => t.status === "TODO").length,
+		0,
+	);
 
 	const completionRate =
 		totalTasks === 0 ? 0 : Math.round((completedTasks / totalTasks) * 100);
@@ -25,5 +35,6 @@ self.onmessage = (event) => {
 		todoTasks,
 		completedTasks,
 		completionRate,
+		inProgressTasks,
 	});
 };

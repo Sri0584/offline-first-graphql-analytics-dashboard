@@ -1,9 +1,12 @@
-import CardComponent from "./CardComponent";
 import { AnalyticsObj, Project } from "@/app/utils/types";
 import { Button } from "../ui/button";
 import { useRouter } from "next/navigation";
-import ChartsComponent from "./ChartsComponent";
+import React, { lazy, Suspense } from "react";
 
+const ChartsComponent = lazy(() => import("./ChartsComponent"));
+const CardComponent = React.lazy(
+	() => import("@/components/dashboard/CardComponent"),
+);
 const AnalyticsComponent = ({
 	analytics,
 	projects,
@@ -55,7 +58,9 @@ const AnalyticsComponent = ({
 					{analytics.completionRate}
 				</CardComponent>
 			</div>
-			<ChartsComponent analytics={analytics} projects={projects} />
+			<Suspense fallback={<div>Loading Charts Component..</div>}>
+				<ChartsComponent analytics={analytics} projects={projects} />
+			</Suspense>
 		</>
 	);
 };
