@@ -46,11 +46,11 @@ const AnalyticsComponent = ({
 			return () => window.cancelIdleCallback(idleId);
 		}
 
-		const timeoutId = window.setTimeout(() => {
+		const timeoutId = setTimeout(() => {
 			setRenderCharts(true);
 		}, 200);
 
-		return () => window.clearTimeout(timeoutId);
+		return () => clearTimeout(timeoutId);
 	}, []);
 
 	return (
