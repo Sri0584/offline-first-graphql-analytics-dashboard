@@ -22,13 +22,17 @@ import {
 import { toast } from "sonner";
 
 import DashboardSkeleton from "./DashboardSkeleton";
-import AnalyticsComponent from "@/components/dashboard/AnalyticsComponent";
 import CardComponent from "@/components/dashboard/CardComponent";
 
 const KanbanBoard = dynamic(() => import("./KanbanBoard"), {
 	loading: () => <div className="h-64 animate-pulse rounded-xl border bg-muted/40" />,
 });
-const CreateProject = dynamic(() => import("./CreateProject"));
+const AnalyticsComponent = dynamic(() => import("@/components/dashboard/AnalyticsComponent"), {
+	loading: () => <div className="h-48 animate-pulse rounded-xl border bg-muted/40" />,
+});
+const CreateProject = dynamic(() => import("./CreateProject"), {
+	loading: () => <div className="h-24 animate-pulse rounded-xl border bg-muted/40" />,
+});
 const ProjectComponent = dynamic(() => import("@/components/dashboard/ProjectComponent"));
 
 const DashboardClient = () => {
