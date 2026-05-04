@@ -1,12 +1,14 @@
 import { AnalyticsObj, Project } from "@/app/utils/types";
 import { Button } from "../ui/button";
 import { useRouter } from "next/navigation";
-import React, { lazy, Suspense } from "react";
+import React, { useEffect, useState } from "react";
+import dynamic from "next/dynamic";
+import CardComponent from "@/components/dashboard/CardComponent";
 
-const ChartsComponent = lazy(() => import("./ChartsComponent"));
-const CardComponent = React.lazy(
-	() => import("@/components/dashboard/CardComponent"),
-);
+const ChartsComponent = dynamic(() => import("./ChartsComponent"), {
+	ssr: false,
+	loading: () => <ChartsFallback />,
+});
 
 const ChartsFallback = () => (
 	<div className='grid min-w-0 gap-4 lg:grid-cols-3' aria-hidden='true'>
@@ -18,6 +20,7 @@ const ChartsFallback = () => (
 		))}
 	</div>
 );
+
 const AnalyticsComponent = ({
 	analytics,
 	projects,
@@ -26,10 +29,29 @@ const AnalyticsComponent = ({
 	projects: Project[];
 }) => {
 	const router = useRouter();
+	const [renderCharts, setRenderCharts] = useState(false);
 
 	const handleSignout = () => {
 		router.push("/login");
 	};
+
+	useEffect(() => {
+		if (typeof window === "undefined") return;
+
+		if ("requestIdleCallback" in window) {
+			const idleId = window.requestIdleCallback(() => {
+				setRenderCharts(true);
+			});
+
+			return () => window.cancelIdleCallback(idleId);
+		}
+
+		const timeoutId = window.setTimeout(() => {
+			setRenderCharts(true);
+		}, 200);
+
+		return () => window.clearTimeout(timeoutId);
+	}, []);
 
 	return (
 		<>
@@ -69,9 +91,11 @@ const AnalyticsComponent = ({
 					{analytics.completionRate}
 				</CardComponent>
 			</div>
-			<Suspense fallback={<ChartsFallback />}>
+			{renderCharts ? (
 				<ChartsComponent analytics={analytics} projects={projects} />
-			</Suspense>
+			) : (
+				<ChartsFallback />
+			)}
 		</>
 	);
 };
