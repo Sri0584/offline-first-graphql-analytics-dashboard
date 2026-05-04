@@ -1,6 +1,11 @@
 import type { Metadata } from "next";
+import dynamic from "next/dynamic";
 import "./globals.css";
-import { Toaster } from "@/components/ui/sonner";
+
+const Toaster = dynamic(
+	() => import("@/components/ui/sonner").then((mod) => mod.Toaster),
+	{ ssr: false },
+);
 
 export const metadata: Metadata = {
 	title: "Offline GraphQL Analytics Dashboard",
@@ -15,8 +20,8 @@ export default function RootLayout({
 	return (
 		<html lang='en'>
 			<body>
-				<Toaster richColors position='top-right' />
 				{children}
+				<Toaster richColors position='top-right' />
 			</body>
 		</html>
 	);
