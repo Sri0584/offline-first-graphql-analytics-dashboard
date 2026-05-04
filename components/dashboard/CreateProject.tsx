@@ -74,21 +74,24 @@ const CreateProject = () => {
 	};
 
 	return (
-		<div className='flex gap-2'>
-			<Input
-				className='rounded border px-3 py-2'
-				placeholder='New project name'
-				value={projectName}
-				onChange={(e) => setProjectName(e.target.value)}
-			/>
+		<>
+			<p className='text-sm font-medium'>Create Project</p>
+			<div className='flex gap-2'>
+				<Input
+					className='rounded border px-3 py-2'
+					placeholder='New project name'
+					value={projectName}
+					onChange={(e) => setProjectName(e.target.value)}
+				/>
 
-			<Button
-				className='rounded bg-primary px-4 py-2 text-primary-foreground'
-				onClick={handleCreateProject}
-			>
-				Create Project
-			</Button>
-		</div>
+				<Button
+					className='rounded bg-primary px-4 py-2 text-primary-foreground'
+					onClick={handleCreateProject}
+				>
+					Create
+				</Button>
+			</div>
+		</>
 	);
 };
 

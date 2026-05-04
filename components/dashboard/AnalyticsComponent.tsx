@@ -13,7 +13,7 @@ const ChartsFallback = () => (
 		{Array.from({ length: 3 }).map((_, index) => (
 			<div
 				key={index}
-				className='h-[24rem] min-h-[24rem] animate-pulse rounded-xl border bg-muted/40'
+				className='h-96 min-h-96 animate-pulse rounded-xl border bg-muted/40'
 			/>
 		))}
 	</div>

@@ -57,8 +57,6 @@ const DashboardClient = () => {
 
 	useSubscription<TaskCreatedSubscriptionResponse>(TASK_CREATED_SUBSCRIPTION, {
 		onData: ({ client, data }) => {
-			console.log(data, "data");
-
 			const newTask = data.data?.taskCreated;
 
 			if (!newTask) return;
