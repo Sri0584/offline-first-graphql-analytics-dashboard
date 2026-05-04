@@ -7,6 +7,17 @@ const ChartsComponent = lazy(() => import("./ChartsComponent"));
 const CardComponent = React.lazy(
 	() => import("@/components/dashboard/CardComponent"),
 );
+
+const ChartsFallback = () => (
+	<div className='grid min-w-0 gap-4 lg:grid-cols-3' aria-hidden='true'>
+		{Array.from({ length: 3 }).map((_, index) => (
+			<div
+				key={index}
+				className='h-[24rem] min-h-[24rem] animate-pulse rounded-xl border bg-muted/40'
+			/>
+		))}
+	</div>
+);
 const AnalyticsComponent = ({
 	analytics,
 	projects,
@@ -58,7 +69,7 @@ const AnalyticsComponent = ({
 					{analytics.completionRate}
 				</CardComponent>
 			</div>
-			<Suspense fallback={<div>Loading Charts Component..</div>}>
+			<Suspense fallback={<ChartsFallback />}>
 				<ChartsComponent analytics={analytics} projects={projects} />
 			</Suspense>
 		</>
