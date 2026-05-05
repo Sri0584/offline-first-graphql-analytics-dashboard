@@ -237,6 +237,7 @@ const DashboardClient = () => {
 					variables: {
 						projectId: task.projectId,
 						title: task.title,
+						clientMutationId: task.clientMutationId,
 					},
 				});
 			}
