@@ -84,7 +84,10 @@ const resolvers = {
 	},
 	Subscription: {
 		taskCreated: {
-			subscribe: () => pubsub.asyncIterableIterator([TASK_CREATED]),
+			subscribe: () => {
+				console.log("Client subscribed to taskCreated");
+				return pubsub.asyncIterableIterator([TASK_CREATED]);
+			},
 		},
 	},
 	Mutation: {
@@ -144,7 +147,7 @@ const resolvers = {
 					status: "TODO",
 				},
 			});
-
+			console.log("Publishing TASK_CREATED", task);
 			await pubsub.publish(TASK_CREATED, {
 				taskCreated: task,
 			});
