@@ -9,6 +9,15 @@ rerun migrations
 regenerate Prisma client
 
 px prisma migrate dev --name add-task-client-mutation-id - Add field to Prisma Task
+Remove-Item -Recurse -Force node_modules\.prisma -ErrorAction SilentlyContinue
+Remove-Item -Recurse -Force node_modules\@prisma -ErrorAction SilentlyContinue
+Delete generated Prisma folders
+Regenerate Prisma client - npx prisma generate
+
+npx prisma db push --force-reset
+npx prisma generate
+
+This will delete existing Neon data and recreate all tables
 
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 Dashboard page
