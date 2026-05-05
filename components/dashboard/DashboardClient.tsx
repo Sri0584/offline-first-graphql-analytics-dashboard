@@ -8,6 +8,7 @@ import {
 	CREATE_TASK,
 	GET_PROJECTS,
 	TASK_CREATED_SUBSCRIPTION,
+	TASK_FRAGMENT,
 	UPDATE_TASK_STATUS,
 } from "@/app/utils/gql-queries";
 import {
@@ -19,6 +20,7 @@ import {
 	TaskCreatedSubscriptionResponse,
 	TaskStatus,
 } from "@/app/utils/types";
+import type { Reference } from "@apollo/client/cache";
 import { toast } from "sonner";
 
 import DashboardSkeleton from "./DashboardSkeleton";
@@ -45,7 +47,31 @@ const CreateProject = dynamic(() => import("./CreateProject"), {
 const ProjectComponent = dynamic(
 	() => import("@/components/dashboard/ProjectComponent"),
 );
+// Reused the same Apollo cache upsert path for both incoming taskCreated subscription events and local createTask
+// mutation updates, preventing the tab that created the task from duplicating it while allowing the other tab to see it.
+const upsertTaskRef = (
+	existingTaskRefs: readonly Reference[] = [],
+	newTaskRef: Reference | undefined,
+	newTask: Task,
+	readField: (fieldName: string, ref: Reference) => unknown,
+) => {
+	if (!newTaskRef) {
+		return existingTaskRefs;
+	}
 
+	const filteredRefs = existingTaskRefs.filter((taskRef) => {
+		const existingId = readField("id", taskRef);
+		const existingClientMutationId = readField("clientMutationId", taskRef);
+
+		return (
+			existingId !== newTask.id &&
+			(!newTask.clientMutationId ||
+				existingClientMutationId !== newTask.clientMutationId)
+		);
+	});
+
+	return [...filteredRefs, newTaskRef];
+};
 const DashboardClient = () => {
 	const [isOffline, setIsOffline] = useState(false);
 
@@ -82,41 +108,18 @@ const DashboardClient = () => {
 					id: newTask.projectId,
 				}),
 				fields: {
-					tasks(existingTaskRefs = [], { readField }) {
-						const refs =
-							Array.isArray(existingTaskRefs) ? existingTaskRefs : (
-								[existingTaskRefs]
-							);
-						const alreadyExists = refs.some((taskRef) => {
-							const existingClientMutationId = readField(
-								"clientMutationId",
-								taskRef,
-							);
-
-							return existingClientMutationId === newTask.clientMutationId;
-						});
-						if (alreadyExists) {
-							return existingTaskRefs;
-						}
-
+					tasks(existingTaskRefs: readonly Reference[] = [], { readField }) {
 						const newTaskRef = client.cache.writeFragment({
 							data: newTask,
-							fragment: gql`
-								fragment IncomingTask on Task {
-									__typename
-									id
-									title
-									status
-									projectId
-								}
-							`,
+							fragment: TASK_FRAGMENT,
 						});
 
-						if (!newTaskRef) {
-							return existingTaskRefs;
-						}
-
-						return [...refs, newTaskRef];
+						return upsertTaskRef(
+							existingTaskRefs,
+							newTaskRef,
+							newTask,
+							readField,
+						);
 					},
 				},
 			});
@@ -162,7 +165,7 @@ const DashboardClient = () => {
 				id: `temp-${clientMutationId}`,
 				title: title,
 				status: "TODO",
-				projectId: Math.random().toString(),
+				projectId: id,
 			});
 			toast.info("Saved offline. Will sync later.");
 			return;
@@ -194,21 +197,21 @@ const DashboardClient = () => {
 								id: id,
 							}),
 							fields: {
-								tasks(existingTaskRefs = []) {
+								tasks(
+									existingTaskRefs: readonly Reference[] = [],
+									{ readField },
+								) {
 									const newTaskRef = cache.writeFragment({
 										data: newTask,
-										fragment: gql`
-											fragment NewTask on Task {
-												__typename
-												id
-												title
-												status
-												clientMutationId
-											}
-										`,
+										fragment: TASK_FRAGMENT,
 									});
 
-									return [...existingTaskRefs, newTaskRef];
+									return upsertTaskRef(
+										existingTaskRefs,
+										newTaskRef,
+										newTask,
+										readField,
+									);
 								},
 							},
 						});

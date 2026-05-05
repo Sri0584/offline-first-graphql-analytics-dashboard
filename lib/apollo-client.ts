@@ -11,15 +11,17 @@ import type { FetchResult } from "@apollo/client";
 import { getMainDefinition } from "@apollo/client/utilities";
 import { createClient } from "graphql-sse";
 import { print } from "graphql";
-
+// Sent same-origin credentials on both GraphQL HTTP and SSE links so authenticated dashboard tabs keep cookies attached consistently.
 const httpLink = new HttpLink({
 	uri: "/api/graphql",
+	credentials: "same-origin",
 });
 
 const sseClient =
 	typeof window !== "undefined" ?
 		createClient({
 			url: "/api/graphql",
+			credentials: "same-origin",
 		})
 	:	null;
 

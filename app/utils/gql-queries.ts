@@ -1,5 +1,6 @@
 import { gql } from "@apollo/client";
-
+// Added projectId and clientMutationId to task selections, including the taskCreated subscription,
+// so tab 2 receives enough data to normalize and deduplicate the created task in Apollo cache.
 export const GET_PROJECTS = gql`
 	query GetProjects {
 		projects {
@@ -12,6 +13,8 @@ export const GET_PROJECTS = gql`
 				id
 				title
 				status
+				projectId
+				clientMutationId
 			}
 		}
 	}
@@ -28,6 +31,8 @@ export const CREATE_PROJECT = gql`
 				id
 				title
 				status
+				projectId
+				clientMutationId
 			}
 		}
 	}
@@ -45,6 +50,8 @@ export const UPDATE_PROJECT_NAME = gql`
 				id
 				title
 				status
+				projectId
+				clientMutationId
 			}
 		}
 	}
@@ -62,6 +69,8 @@ export const UPDATE_PROJECT_STATUS = gql`
 				id
 				title
 				status
+				projectId
+				clientMutationId
 			}
 		}
 	}
@@ -103,6 +112,7 @@ export const UPDATE_TASK_STATUS = gql`
 			title
 			status
 			projectId
+			clientMutationId
 		}
 	}
 `;
@@ -123,6 +133,18 @@ export const TASK_CREATED_SUBSCRIPTION = gql`
 			title
 			status
 			projectId
+			clientMutationId
 		}
+	}
+`;
+
+export const TASK_FRAGMENT = gql`
+	fragment CachedTask on Task {
+		__typename
+		id
+		title
+		status
+		projectId
+		clientMutationId
 	}
 `;

@@ -4,7 +4,7 @@ export type Task = {
 	title: string;
 	status: TaskStatus;
 	projectId: string;
-	clientMutationId?: string;
+	clientMutationId?: string | null;
 };
 
 export type Project = {
@@ -25,7 +25,7 @@ export type TaskCreatedSubscriptionResponse = {
 export type CreateTaskVariables = {
 	projectId: string;
 	title: string;
-	clientMutationId?: string;
+	clientMutationId?: string | null;
 };
 
 export type AnalyticsObj = {
@@ -86,5 +86,5 @@ export type UpdateTaskStatusArgs = {
 export type CreateTaskArgs = {
 	projectId: string;
 	title: string;
-	clientMutationId?: string;
+	clientMutationId?: string | null;
 };
