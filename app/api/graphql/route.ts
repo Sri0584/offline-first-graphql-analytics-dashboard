@@ -23,7 +23,7 @@ const typeDefs = /* GraphQL */ `
 		status: String!
 		createdAt: String!
 		projectId: ID!
-		clientMutationId: String
+		clientMutationId: String!
 	}
 
 	type Query {

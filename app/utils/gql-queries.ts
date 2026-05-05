@@ -76,13 +76,22 @@ export const DELETE_PROJECT = gql`
 	}
 `;
 export const CREATE_TASK = gql`
-	mutation CreateTask($projectId: ID!, $title: String!) {
-		createTask(projectId: $projectId, title: $title) {
+	mutation CreateTask(
+		$projectId: ID!
+		$title: String!
+		$clientMutationId: String
+	) {
+		createTask(
+			projectId: $projectId
+			title: $title
+			clientMutationId: $clientMutationId
+		) {
 			__typename
 			id
 			title
 			status
 			projectId
+			clientMutationId
 		}
 	}
 `;

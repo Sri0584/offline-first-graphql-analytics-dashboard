@@ -25,6 +25,7 @@ export type TaskCreatedSubscriptionResponse = {
 export type CreateTaskVariables = {
 	projectId: string;
 	title: string;
+	clientMutationId?: string;
 };
 
 export type AnalyticsObj = {

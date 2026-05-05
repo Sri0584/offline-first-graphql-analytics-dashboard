@@ -154,12 +154,12 @@ const DashboardClient = () => {
 	};
 	const handleClick = async (id: string) => {
 		const title = titles[id]?.trim();
-
+		const clientMutationId = crypto.randomUUID();
 		if (!title) return;
 		if (isOffline) {
 			await addtoQueue({
 				__typename: "Task",
-				id: `offline-${Date.now()}`,
+				id: `temp-${clientMutationId}`,
 				title: title,
 				status: "TODO",
 				projectId: Math.random().toString(),
@@ -167,18 +167,18 @@ const DashboardClient = () => {
 			toast.info("Saved offline. Will sync later.");
 			return;
 		} else {
-			const clientMutationId = crypto.randomUUID();
 			try {
 				createTask({
 					variables: {
 						projectId: id,
-						title: title,
+						title,
+						clientMutationId,
 					},
 					optimisticResponse: {
 						createTask: {
 							__typename: "Task",
 							id: `temp-${clientMutationId}`,
-							title: title,
+							title,
 							status: "TODO",
 							projectId: id,
 							clientMutationId,
@@ -203,6 +203,7 @@ const DashboardClient = () => {
 												id
 												title
 												status
+												clientMutationId
 											}
 										`,
 									});

@@ -5,6 +5,7 @@ import {
 	useDraggable,
 	useDroppable,
 } from "@dnd-kit/core";
+import { ChevronDown } from "lucide-react";
 
 const columns: TaskStatus[] = ["TODO", "IN_PROGRESS", "DONE"];
 type KanbanBoardProps = {
@@ -64,9 +65,12 @@ const KanbanColumn = ({
 				isOver ? "bg-muted" : "bg-background"
 			}`}
 		>
-			<details open>
-				<summary className='mb-4 flex list-none items-center justify-between'>
-					<h3 className='font-semibold'>{formatStatus(status)}</h3>
+			<details open className='group'>
+				<summary className='mb-4 flex cursor-pointer list-none items-center justify-between rounded-md p-1'>
+					<div className='flex items-center gap-2'>
+						<ChevronDown className='h-4 w-4 transition-transform group-open:rotate-180' />
+						<h3 className='font-semibold'>{formatStatus(status)}</h3>
+					</div>
 					<span className='rounded-full border px-2 py-0.5 text-xs'>
 						{tasks.length}
 					</span>
@@ -95,7 +99,7 @@ const KanbanTask = ({ task }: { task: Task & { projectName: string } }) => {
 			{
 				transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
 			}
-		: 	undefined;
+		:	undefined;
 	return (
 		<div
 			ref={setNodeRef}
