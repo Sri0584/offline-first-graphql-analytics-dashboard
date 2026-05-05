@@ -64,20 +64,23 @@ const KanbanColumn = ({
 				isOver ? "bg-muted" : "bg-background"
 			}`}
 		>
-			<div className='mb-4 flex items-center justify-between'>
-				<h3 className='font-semibold'>{formatStatus(status)}</h3>
-				<span className='rounded-full border px-2 py-0.5 text-xs'>
-					{tasks.length}
-				</span>
-			</div>
-			<div className='space-y-3'>
-				{tasks.map((task) => (
-					<KanbanTask key={task.id} task={task} />
-				))}
-			</div>
+			<details open>
+				<summary className='mb-4 flex list-none items-center justify-between'>
+					<h3 className='font-semibold'>{formatStatus(status)}</h3>
+					<span className='rounded-full border px-2 py-0.5 text-xs'>
+						{tasks.length}
+					</span>
+				</summary>
+				<div className='space-y-3'>
+					{tasks.map((task) => (
+						<KanbanTask key={task.id} task={task} />
+					))}
+				</div>
+			</details>
 		</div>
 	);
 };
+
 const formatStatus = (status: TaskStatus) => {
 	return status.replace("_", " ");
 };
@@ -92,7 +95,7 @@ const KanbanTask = ({ task }: { task: Task & { projectName: string } }) => {
 			{
 				transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
 			}
-		:	undefined;
+		: 	undefined;
 	return (
 		<div
 			ref={setNodeRef}
