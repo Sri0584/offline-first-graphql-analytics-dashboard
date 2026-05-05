@@ -75,7 +75,7 @@ const CreateProject = () => {
 
 	return (
 		<>
-			<p className='text-sm font-medium'>Create Project</p>
+			<p className='font-semibold text-medium'>CREATE PROJECT</p>
 			<div className='flex gap-2'>
 				<Input
 					className='rounded border px-3 py-2'

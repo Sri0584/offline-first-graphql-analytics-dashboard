@@ -23,6 +23,7 @@ const typeDefs = /* GraphQL */ `
 		status: String!
 		createdAt: String!
 		projectId: ID!
+		clientMutationId: String
 	}
 
 	type Query {
@@ -35,7 +36,7 @@ const typeDefs = /* GraphQL */ `
 		updateProjectName(projectId: ID!, name: String!): Project!
 		updateProjectStatus(projectId: ID!, status: String!): Project!
 		deleteProject(projectId: ID!): Project!
-		createTask(projectId: ID!, title: String!): Task!
+		createTask(projectId: ID!, title: String!, clientMutationId: String): Task!
 		updateTaskStatus(taskId: ID!, status: String!): Task!
 		deleteTask(taskId: ID!): Task!
 	}
@@ -145,6 +146,7 @@ const resolvers = {
 					title: args.title,
 					projectId: args.projectId,
 					status: "TODO",
+					clientMutationId: args.clientMutationId,
 				},
 			});
 			console.log("Publishing TASK_CREATED", task);

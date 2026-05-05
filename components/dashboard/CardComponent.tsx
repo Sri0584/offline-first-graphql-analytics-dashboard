@@ -16,7 +16,7 @@ const CardComponent = ({
 	cardClassName,
 }: CardComponentProps) => {
 	return (
-		<Card className={cn("min-h-36", cardClassName)}>
+		<Card className={cn("min-h-6", cardClassName)}>
 			<CardHeader>
 				<CardTitle>{title}</CardTitle>
 			</CardHeader>

@@ -1,6 +1,6 @@
 "use client";
 import { useQuery, useMutation, useSubscription } from "@apollo/client/react";
-import React, { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import { gql } from "@apollo/client";
 import { addtoQueue, clearQueue, getQueue } from "@/lib/offline-queue";
@@ -25,15 +25,26 @@ import DashboardSkeleton from "./DashboardSkeleton";
 import CardComponent from "@/components/dashboard/CardComponent";
 
 const KanbanBoard = dynamic(() => import("./KanbanBoard"), {
-	loading: () => <div className="h-64 animate-pulse rounded-xl border bg-muted/40" />,
+	loading: () => (
+		<div className='h-64 animate-pulse rounded-xl border bg-muted/40' />
+	),
 });
-const AnalyticsComponent = dynamic(() => import("@/components/dashboard/AnalyticsComponent"), {
-	loading: () => <div className="h-48 animate-pulse rounded-xl border bg-muted/40" />,
-});
+const AnalyticsComponent = dynamic(
+	() => import("@/components/dashboard/AnalyticsComponent"),
+	{
+		loading: () => (
+			<div className='h-48 animate-pulse rounded-xl border bg-muted/40' />
+		),
+	},
+);
 const CreateProject = dynamic(() => import("./CreateProject"), {
-	loading: () => <div className="h-24 animate-pulse rounded-xl border bg-muted/40" />,
+	loading: () => (
+		<div className='h-24 animate-pulse rounded-xl border bg-muted/40' />
+	),
 });
-const ProjectComponent = dynamic(() => import("@/components/dashboard/ProjectComponent"));
+const ProjectComponent = dynamic(
+	() => import("@/components/dashboard/ProjectComponent"),
+);
 
 const DashboardClient = () => {
 	const [isOffline, setIsOffline] = useState(false);
@@ -71,7 +82,23 @@ const DashboardClient = () => {
 					id: newTask.projectId,
 				}),
 				fields: {
-					tasks(existingTaskRefs = []) {
+					tasks(existingTaskRefs = [], { readField }) {
+						const refs =
+							Array.isArray(existingTaskRefs) ? existingTaskRefs : (
+								[existingTaskRefs]
+							);
+						const alreadyExists = refs.some((taskRef) => {
+							const existingClientMutationId = readField(
+								"clientMutationId",
+								taskRef,
+							);
+
+							return existingClientMutationId === newTask.clientMutationId;
+						});
+						if (alreadyExists) {
+							return existingTaskRefs;
+						}
+
 						const newTaskRef = client.cache.writeFragment({
 							data: newTask,
 							fragment: gql`
@@ -80,11 +107,16 @@ const DashboardClient = () => {
 									id
 									title
 									status
+									projectId
 								}
 							`,
 						});
 
-						return [...existingTaskRefs, newTaskRef];
+						if (!newTaskRef) {
+							return existingTaskRefs;
+						}
+
+						return [...refs, newTaskRef];
 					},
 				},
 			});
@@ -135,6 +167,7 @@ const DashboardClient = () => {
 			toast.info("Saved offline. Will sync later.");
 			return;
 		} else {
+			const clientMutationId = crypto.randomUUID();
 			try {
 				createTask({
 					variables: {
@@ -144,10 +177,11 @@ const DashboardClient = () => {
 					optimisticResponse: {
 						createTask: {
 							__typename: "Task",
-							id: `temp-${Date.now()}`,
+							id: `temp-${clientMutationId}`,
 							title: title,
 							status: "TODO",
 							projectId: id,
+							clientMutationId,
 						},
 					},
 					update(cache, { data }) {
@@ -271,19 +305,21 @@ const DashboardClient = () => {
 				<CreateProject />
 				<CardComponent title='Projects'>
 					<Suspense
-						fallback={<div className='h-24 animate-pulse rounded-md bg-muted/40' />}
+						fallback={
+							<div className='h-24 animate-pulse rounded-md bg-muted/40' />
+						}
 					>
-					<div className='space-y-3'>
-						{data?.projects.map((project) => (
-							<ProjectComponent
-								key={project.id}
-								project={project}
-								titles={titles}
-								setTitles={setTitles}
-								handleClick={handleClick}
-							/>
-						))}
-					</div>
+						<div className='space-y-3'>
+							{data?.projects.map((project) => (
+								<ProjectComponent
+									key={project.id}
+									project={project}
+									titles={titles}
+									setTitles={setTitles}
+									handleClick={handleClick}
+								/>
+							))}
+						</div>
 					</Suspense>
 				</CardComponent>
 			</div>

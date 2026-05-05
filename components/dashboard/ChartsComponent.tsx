@@ -39,9 +39,9 @@ const ChartsComponent = ({
 	];
 
 	return (
-		<div className='grid min-w-0 gap-4 lg:grid-cols-3'>
+		<div className='grid min-w-0 gap-4 lg:grid-cols-3 min-h-6 h-84'>
 			<CardComponent title='Completion Trend'>
-				<div className='h-72 w-full min-w-0 min-h-72'>
+				<div className='h-60 w-full min-w-0 min-h-6'>
 					<ResponsiveContainer width='100%' height='100%'>
 						<LineChart data={completionTrendData}>
 							<CartesianGrid strokeDasharray='3 3' />
@@ -68,7 +68,7 @@ const ChartsComponent = ({
 						))}
 					</div>
 
-					<div className='h-72 min-h-72 w-full min-w-0'>
+					<div className='h-60 min-h-6 w-full min-w-0'>
 						<ResponsiveContainer
 							width='100%'
 							height='100%'
@@ -91,7 +91,7 @@ const ChartsComponent = ({
 				</div>
 			</CardComponent>
 			<CardComponent title='Workload by Project'>
-				<div className='h-72 min-h-72 w-full min-w-0'>
+				<div className='h-60 min-h-6 w-full min-w-0'>
 					<ResponsiveContainer
 						width='100%'
 						height='100%'

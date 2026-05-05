@@ -20,13 +20,17 @@ const TaskComponent = ({ task, projectId }: TaskComponentProps) => {
 			updateTaskStatus({
 				variables: {
 					taskId: id,
+					title,
 					status: nextStatus,
+					projectId,
 				},
 				optimisticResponse: {
 					updateTaskStatus: {
 						__typename: "Task",
 						id: id,
+						title,
 						status: nextStatus,
+						projectId,
 					},
 				},
 			});

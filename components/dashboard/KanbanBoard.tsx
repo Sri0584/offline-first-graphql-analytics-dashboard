@@ -34,7 +34,7 @@ const KanbanBoard = ({ projects, onMoveTask }: KanbanBoardProps) => {
 
 	return (
 		<DndContext onDragEnd={handleDragEnd}>
-			<div className='grid min-h-[24rem] gap-4 md:grid-cols-3'>
+			<div className='grid min-h-6 gap-4 md:grid-cols-3'>
 				{columns.map((status) => (
 					<KanbanColumn
 						key={status}
@@ -60,7 +60,7 @@ const KanbanColumn = ({
 	return (
 		<div
 			ref={setNodeRef}
-			className={`min-h-72 rounded-lg border p-4 ${
+			className={`min-h-6 rounded-lg border p-4 ${
 				isOver ? "bg-muted" : "bg-background"
 			}`}
 		>

@@ -22,10 +22,10 @@ const SignUpPage = () => {
 					password,
 				}),
 			});
-			const data = await res.json();
-			console.log(data, "data");
 
-			if (!res.ok && !data.error.includes("exists")) {
+			const data = await res.json();
+
+			if (!res.ok) {
 				throw new Error(data.error || "Something went wrong!");
 			}
 

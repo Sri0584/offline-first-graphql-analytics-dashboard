@@ -4,6 +4,7 @@ export type Task = {
 	title: string;
 	status: TaskStatus;
 	projectId: string;
+	clientMutationId?: string;
 };
 
 export type Project = {
@@ -84,4 +85,5 @@ export type UpdateTaskStatusArgs = {
 export type CreateTaskArgs = {
 	projectId: string;
 	title: string;
+	clientMutationId?: string;
 };
