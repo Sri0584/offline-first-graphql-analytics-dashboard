@@ -22,6 +22,30 @@ import {
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 
+type DebouncedFunction<Args extends unknown[]> = {
+	(...args: Args): void;
+	cancel: () => void;
+};
+
+const debouncedSearch = <Args extends unknown[]>(
+	fn: (...args: Args) => void,
+	delay: number,
+): DebouncedFunction<Args> => {
+	let timer: ReturnType<typeof setTimeout> | undefined;
+
+	const debounced = ((...args: Args) => {
+		if (timer) clearTimeout(timer);
+		timer = setTimeout(() => fn(...args), delay);
+	}) as DebouncedFunction<Args>;
+
+	debounced.cancel = () => {
+		if (timer) clearTimeout(timer);
+		timer = undefined;
+	};
+
+	return debounced;
+};
+
 type FilterSearchComponentProps = {
 	projectStatus: ProjectStatusFilter;
 	setProjectStatus: Dispatch<SetStateAction<ProjectStatusFilter>>;
@@ -42,16 +66,6 @@ const FilterSearchComponent = ({
 	hasActiveFilters,
 }: FilterSearchComponentProps) => {
 	const [inputValue, setInputValue] = useState("");
-	const debouncedSearch = <T extends (...args: Parameters<T>) => void>(
-		fn: T,
-		delay: number,
-	) => {
-		let timer: ReturnType<typeof setTimeout>;
-		return (...args: Parameters<T>) => {
-			if (timer) clearTimeout(timer);
-			timer = setTimeout(() => fn(...args), delay);
-		};
-	};
 
 	const handleTaskSelect = (val: string) => {
 		startTransition(() => {
@@ -67,6 +81,17 @@ const FilterSearchComponent = ({
 		() => debouncedSearch((val: string) => setTaskSearchQuery(val), 500),
 		[setTaskSearchQuery],
 	);
+
+	const handleSearchChange = (value: string) => {
+		setInputValue(value);
+		debouncedSetTaskSearchQuery(value.trim().toLowerCase());
+	};
+
+	const handleClearFilters = () => {
+		debouncedSetTaskSearchQuery.cancel();
+		setInputValue("");
+		clearFilters();
+	};
 	return (
 		<div className='grid gap-3 rounded-lg border bg-muted/20 p-3 md:grid-cols-3'>
 			<label className='space-y-1 text-sm font-medium'>
@@ -108,11 +133,8 @@ const FilterSearchComponent = ({
 				<Input
 					className='rounded border px-2 py-1 text-sm'
 					placeholder='Search Task...'
-					value={inputValue.trim().toLowerCase() || ""}
-					onChange={(e) => {
-						setInputValue(e.target.value);
-						debouncedSetTaskSearchQuery(e.target.value);
-					}}
+					value={inputValue}
+					onChange={(e) => handleSearchChange(e.target.value)}
 				/>
 			</label>
 			<div className='space-y-1 text-sm font-medium'>
@@ -122,7 +144,7 @@ const FilterSearchComponent = ({
 					variant='outline'
 					className='h-10 w-full'
 					disabled={!hasActiveFilters}
-					onClick={clearFilters}
+					onClick={handleClearFilters}
 				>
 					Clear filters
 				</Button>
