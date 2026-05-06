@@ -2,7 +2,7 @@ import {
 	Dispatch,
 	SetStateAction,
 	startTransition,
-	useMemo,
+	useEffect,
 	useState,
 } from "react";
 import {
@@ -19,6 +19,7 @@ import {
 	TaskStatusFilter,
 	taskStatusOptions,
 } from "@/app/utils/types";
+import { normalizeTaskSearchQuery } from "@/lib/dashboard-utils";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 
@@ -27,6 +28,7 @@ type FilterSearchComponentProps = {
 	setProjectStatus: Dispatch<SetStateAction<ProjectStatusFilter>>;
 	taskStatusFilter: TaskStatusFilter;
 	setTaskStatusFilter: Dispatch<SetStateAction<TaskStatusFilter>>;
+	taskSearchQuery: string;
 	setTaskSearchQuery: Dispatch<SetStateAction<string>>;
 	clearFilters: () => void;
 	hasActiveFilters: boolean;
@@ -37,21 +39,28 @@ const FilterSearchComponent = ({
 	setProjectStatus,
 	taskStatusFilter,
 	setTaskStatusFilter,
+	taskSearchQuery,
 	setTaskSearchQuery,
 	clearFilters,
 	hasActiveFilters,
 }: FilterSearchComponentProps) => {
 	const [inputValue, setInputValue] = useState("");
-	const debouncedSearch = <T extends (...args: Parameters<T>) => void>(
-		fn: T,
-		delay: number,
-	) => {
-		let timer: ReturnType<typeof setTimeout>;
-		return (...args: Parameters<T>) => {
-			if (timer) clearTimeout(timer);
-			timer = setTimeout(() => fn(...args), delay);
-		};
-	};
+
+	useEffect(() => {
+		if (taskSearchQuery === "") {
+			setInputValue("");
+		}
+	}, [taskSearchQuery]);
+
+	useEffect(() => {
+		const timeoutId = window.setTimeout(() => {
+			startTransition(() => {
+				setTaskSearchQuery(normalizeTaskSearchQuery(inputValue));
+			});
+		}, 300);
+
+		return () => window.clearTimeout(timeoutId);
+	}, [inputValue, setTaskSearchQuery]);
 
 	const handleTaskSelect = (val: string) => {
 		startTransition(() => {
@@ -63,10 +72,6 @@ const FilterSearchComponent = ({
 			setProjectStatus(val as ProjectStatusFilter);
 		});
 	};
-	const debouncedSetTaskSearchQuery = useMemo(
-		() => debouncedSearch((val: string) => setTaskSearchQuery(val), 500),
-		[setTaskSearchQuery],
-	);
 	return (
 		<div className='grid gap-3 rounded-lg border bg-muted/20 p-3 md:grid-cols-3'>
 			<label className='space-y-1 text-sm font-medium'>
@@ -108,11 +113,8 @@ const FilterSearchComponent = ({
 				<Input
 					className='rounded border px-2 py-1 text-sm'
 					placeholder='Search Task...'
-					value={inputValue.trim().toLowerCase() || ""}
-					onChange={(e) => {
-						setInputValue(e.target.value);
-						debouncedSetTaskSearchQuery(e.target.value);
-					}}
+					value={inputValue}
+					onChange={(e) => setInputValue(e.target.value)}
 				/>
 			</label>
 			<div className='space-y-1 text-sm font-medium'>

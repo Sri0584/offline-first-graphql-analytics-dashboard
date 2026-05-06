@@ -1,4 +1,5 @@
 import { type Task, type Project, TaskStatusFilter } from "@/app/utils/types";
+import { filterTasks } from "@/lib/dashboard-utils";
 import TaskComponent from "./TaskComponent";
 import ProjectCRUD from "./ProjectCRUD";
 import { Input } from "../ui/input";
@@ -39,19 +40,7 @@ const ProjectComponent = ({
 	};
 	const deferredTaskStatusFilter = useDeferredValue(taskStatusFilter);
 	const filteredTasks = useMemo(
-		() =>
-			project?.tasks.filter((task) => {
-				if (deferredTaskStatusFilter === "ALL") {
-					return taskSearchQuery === "" ?
-							project?.tasks
-						:	task.title.toLowerCase().includes(taskSearchQuery);
-				}
-
-				return (
-					task.status === deferredTaskStatusFilter &&
-					task.title.toLowerCase().includes(taskSearchQuery)
-				);
-			}),
+		() => filterTasks(project.tasks, deferredTaskStatusFilter, taskSearchQuery),
 		[project.tasks, taskSearchQuery, deferredTaskStatusFilter],
 	);
 

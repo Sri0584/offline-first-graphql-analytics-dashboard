@@ -1,79 +1,63 @@
 import { gql } from "@apollo/client";
 // Added projectId and clientMutationId to task selections, including the taskCreated subscription,
 // so tab 2 receives enough data to normalize and deduplicate the created task in Apollo cache.
+export const TASK_FRAGMENT = gql`
+	fragment CachedTask on Task {
+		__typename
+		id
+		title
+		status
+		projectId
+		clientMutationId
+	}
+`;
+
+export const PROJECT_FRAGMENT = gql`
+	fragment CachedProject on Project {
+		__typename
+		id
+		name
+		status
+		tasks {
+			...CachedTask
+		}
+	}
+	${TASK_FRAGMENT}
+`;
+
 export const GET_PROJECTS = gql`
 	query GetProjects {
 		projects {
-			__typename
-			id
-			name
-			status
-			tasks {
-				__typename
-				id
-				title
-				status
-				projectId
-				clientMutationId
-			}
+			...CachedProject
 		}
 	}
+	${PROJECT_FRAGMENT}
 `;
 export const CREATE_PROJECT = gql`
 	mutation CreateProject($name: String!) {
 		createProject(name: $name) {
-			__typename
-			id
-			name
-			status
-			tasks {
-				__typename
-				id
-				title
-				status
-				projectId
-				clientMutationId
-			}
+			...CachedProject
 		}
 	}
+	${PROJECT_FRAGMENT}
 `;
 
 export const UPDATE_PROJECT_NAME = gql`
 	mutation UpdateProjectName($projectId: ID!, $name: String!) {
 		updateProjectName(projectId: $projectId, name: $name) {
-			__typename
-			id
-			name
-			status
-			tasks {
-				__typename
-				id
-				title
-				status
-				projectId
-				clientMutationId
-			}
+			...CachedProject
 		}
 	}
+	${PROJECT_FRAGMENT}
 `;
 
 export const UPDATE_PROJECT_STATUS = gql`
 	mutation UpdateProjectStatus($projectId: ID!, $status: String!) {
 		updateProjectStatus(projectId: $projectId, status: $status) {
-			__typename
-			id
-			name
-			status
-			tasks {
-				__typename
-				id
-				title
-				status
-				projectId
-				clientMutationId
-			}
+			...CachedProject
 		}
 	}
+	${PROJECT_FRAGMENT}
 `;
 
 export const DELETE_PROJECT = gql`
@@ -95,26 +79,18 @@ export const CREATE_TASK = gql`
 			title: $title
 			clientMutationId: $clientMutationId
 		) {
-			__typename
-			id
-			title
-			status
-			projectId
-			clientMutationId
+			...CachedTask
 		}
 	}
+	${TASK_FRAGMENT}
 `;
 export const UPDATE_TASK_STATUS = gql`
 	mutation UpdateTaskStatus($taskId: ID!, $status: String!) {
 		updateTaskStatus(taskId: $taskId, status: $status) {
-			__typename
-			id
-			title
-			status
-			projectId
-			clientMutationId
+			...CachedTask
 		}
 	}
+	${TASK_FRAGMENT}
 `;
 export const DELETE_TASK = gql`
 	mutation deleteTask($taskId: ID!) {
@@ -128,23 +104,8 @@ export const DELETE_TASK = gql`
 export const TASK_CREATED_SUBSCRIPTION = gql`
 	subscription TaskCreated {
 		taskCreated {
-			__typename
-			id
-			title
-			status
-			projectId
-			clientMutationId
+			...CachedTask
 		}
 	}
-`;
-
-export const TASK_FRAGMENT = gql`
-	fragment CachedTask on Task {
-		__typename
-		id
-		title
-		status
-		projectId
-		clientMutationId
-	}
+	${TASK_FRAGMENT}
 `;
