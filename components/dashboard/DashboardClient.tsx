@@ -6,6 +6,7 @@ import {
 	useDeferredValue,
 	useEffect,
 	useMemo,
+	useRef,
 	useState,
 } from "react";
 import dynamic from "next/dynamic";
@@ -98,6 +99,10 @@ const DashboardClient = () => {
 	const [updateTaskStatus] = useMutation(UPDATE_TASK_STATUS);
 	const [analytics, setAnalytics] = useState(EMPTY_ANALYTICS);
 	const [titles, setTitles] = useState<Record<string, string>>({});
+	const [pendingTaskProjectIds, setPendingTaskProjectIds] = useState<
+		Set<string>
+	>(() => new Set());
+	const pendingTaskProjectIdsRef = useRef(new Set<string>());
 	const [createTask] = useMutation<CreateTaskResponse, CreateTaskVariables>(
 		CREATE_TASK,
 	);
@@ -161,23 +166,38 @@ const DashboardClient = () => {
 			toast.error(`Task status update failed ${error}`);
 		}
 	};
+	const setTaskCreatePending = (projectId: string, isPending: boolean) => {
+		const nextPendingIds = new Set(pendingTaskProjectIdsRef.current);
+
+		if (isPending) {
+			nextPendingIds.add(projectId);
+		} else {
+			nextPendingIds.delete(projectId);
+		}
+
+		pendingTaskProjectIdsRef.current = nextPendingIds;
+		setPendingTaskProjectIds(nextPendingIds);
+	};
+
 	const handleClick = async (id: string) => {
 		const title = titles[id]?.trim();
+		if (!title || pendingTaskProjectIdsRef.current.has(id)) return;
+
 		const clientMutationId = crypto.randomUUID();
-		if (!title) return;
-		if (isOffline) {
-			await addtoQueue({
-				__typename: "Task",
-				id: `temp-${clientMutationId}`,
-				title: title,
-				status: "TODO",
-				projectId: id,
-				clientMutationId,
-			});
-			toast.info("Saved offline. Will sync later.");
-			return;
-		} else {
-			try {
+		setTaskCreatePending(id, true);
+
+		try {
+			if (isOffline) {
+				await addtoQueue({
+					__typename: "Task",
+					id: `temp-${clientMutationId}`,
+					title,
+					status: "TODO",
+					projectId: id,
+					clientMutationId,
+				});
+				toast.info("Saved offline. Will sync later.");
+			} else {
 				await createTask({
 					variables: {
 						projectId: id,
@@ -225,16 +245,19 @@ const DashboardClient = () => {
 					},
 				});
 				toast.success("Task created Successfully");
-			} catch (error) {
-				toast.error(`Failed to create task ${error}`);
 			}
-		}
 
-		setTitles((prev) => ({
-			...prev,
-			[id]: "",
-		}));
+			setTitles((prev) => ({
+				...prev,
+				[id]: "",
+			}));
+		} catch (error) {
+			toast.error(`Failed to create task ${error}`);
+		} finally {
+			setTaskCreatePending(id, false);
+		}
 	};
+
 	const initialProjects = useMemo(() => data?.projects ?? [], [data?.projects]);
 	const deferredProjectStatusFilter = useDeferredValue(projectStatus);
 	const hasActiveFilters = useMemo(
@@ -368,6 +391,7 @@ const DashboardClient = () => {
 										titles={titles}
 										setTitles={setTitles}
 										handleClick={handleClick}
+										isCreatingTask={pendingTaskProjectIds.has(project.id)}
 										taskSearchQuery={taskSearchQuery}
 										taskStatusFilter={taskStatusFilter}
 									/>

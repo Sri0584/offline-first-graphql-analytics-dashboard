@@ -1,6 +1,6 @@
 import { CREATE_PROJECT, PROJECT_FRAGMENT } from "@/app/utils/gql-queries";
 import { useMutation } from "@apollo/client/react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import {
@@ -11,6 +11,8 @@ import { toast } from "sonner";
 
 const CreateProject = () => {
 	const [projectName, setProjectName] = useState("");
+	const [isSubmitting, setIsSubmitting] = useState(false);
+	const isSubmittingRef = useRef(false);
 	const [createProject] = useMutation<
 		CreateProjectResponse,
 		CreateProjectVariables
@@ -18,7 +20,11 @@ const CreateProject = () => {
 
 	const handleCreateProject = async () => {
 		const name = projectName.trim();
-		if (!name) return;
+		if (!name || isSubmittingRef.current) return;
+
+		isSubmittingRef.current = true;
+		setIsSubmitting(true);
+
 		try {
 			await createProject({
 				variables: {
@@ -56,6 +62,9 @@ const CreateProject = () => {
 			setProjectName("");
 		} catch (error) {
 			toast.error(`Project creation failed ${error}`);
+		} finally {
+			isSubmittingRef.current = false;
+			setIsSubmitting(false);
 		}
 	};
 
@@ -67,14 +76,16 @@ const CreateProject = () => {
 					className='rounded border px-3 py-2'
 					placeholder='New project name'
 					value={projectName}
+					disabled={isSubmitting}
 					onChange={(e) => setProjectName(e.target.value)}
 				/>
 
 				<Button
 					className='rounded bg-primary px-4 py-2 text-primary-foreground'
 					onClick={handleCreateProject}
+					disabled={isSubmitting || !projectName.trim()}
 				>
-					Create
+					{isSubmitting ? "Creating..." : "Create"}
 				</Button>
 			</div>
 		</>

@@ -17,6 +17,7 @@ type ProjectComponentProps = {
 	titles: Record<string, string>;
 	setTitles: Dispatch<SetStateAction<Record<string, string>>>;
 	handleClick: (id: string) => void;
+	isCreatingTask: boolean;
 	taskStatusFilter: TaskStatusFilter;
 	taskSearchQuery: string;
 };
@@ -26,6 +27,7 @@ const ProjectComponent = ({
 	handleClick,
 	titles,
 	setTitles,
+	isCreatingTask,
 	taskStatusFilter,
 	taskSearchQuery,
 }: ProjectComponentProps) => {
@@ -66,16 +68,16 @@ const ProjectComponent = ({
 						className='rounded border px-2 py-1 text-sm'
 						placeholder='New task...'
 						value={titles[id] || ""}
-						disabled={isDisabled}
+						disabled={isDisabled || isCreatingTask}
 						onChange={handleChange}
 					/>
 
 					<Button
 						className='rounded bg-primary px-3 text-sm text-primary-foreground'
 						onClick={() => handleClick(id)}
-						disabled={isDisabled}
+						disabled={isDisabled || isCreatingTask || !titles[id]?.trim()}
 					>
-						Add
+						{isCreatingTask ? "Adding..." : "Add"}
 					</Button>
 				</div>
 			</div>
