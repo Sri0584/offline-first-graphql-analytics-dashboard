@@ -6,6 +6,7 @@ import {
 	useDeferredValue,
 	useEffect,
 	useMemo,
+	useRef,
 	useState,
 } from "react";
 import dynamic from "next/dynamic";
@@ -26,7 +27,6 @@ import type {
 	TaskCreatedSubscriptionResponse,
 	TaskStatus,
 	TaskStatusFilter,
-	AnalyticsObj,
 } from "@/app/utils/types";
 import type { Reference } from "@apollo/client/cache";
 import { toast } from "sonner";
@@ -34,6 +34,11 @@ import { toast } from "sonner";
 import DashboardSkeleton from "./DashboardSkeleton";
 import CardComponent from "@/components/dashboard/CardComponent";
 import FilterSearchComponent from "./FilterSearchComponent";
+import {
+	EMPTY_ANALYTICS,
+	filterProjectsByStatus,
+	type KanbanTask,
+} from "@/lib/dashboard-utils";
 
 const KanbanBoard = dynamic(() => import("./KanbanBoard"), {
 	loading: () => (
@@ -92,15 +97,12 @@ const DashboardClient = () => {
 		},
 	);
 	const [updateTaskStatus] = useMutation(UPDATE_TASK_STATUS);
-	const [analytics, setAnalytics] = useState<AnalyticsObj>({
-		totalProjects: 0,
-		totalTasks: 0,
-		completedTasks: 0,
-		completionRate: 0,
-		todoTasks: 0,
-		inProgressTasks: 0,
-	});
+	const [analytics, setAnalytics] = useState(EMPTY_ANALYTICS);
 	const [titles, setTitles] = useState<Record<string, string>>({});
+	const [pendingTaskProjectIds, setPendingTaskProjectIds] = useState<
+		Set<string>
+	>(() => new Set());
+	const pendingTaskProjectIdsRef = useRef(new Set<string>());
 	const [createTask] = useMutation<CreateTaskResponse, CreateTaskVariables>(
 		CREATE_TASK,
 	);
@@ -140,27 +142,22 @@ const DashboardClient = () => {
 		},
 	});
 
-	const handleMoveTask = (
-		task: Task & { projectName: string },
-		status: TaskStatus,
-	) => {
-		const { id, projectName, title } = task;
-		const projectId = data?.projects.find(
-			(project) => project.name === projectName,
-		)?.id;
+	const handleMoveTask = async (task: KanbanTask, status: TaskStatus) => {
+		const { id, title, projectId, clientMutationId } = task;
 		try {
-			updateTaskStatus({
+			await updateTaskStatus({
 				variables: {
 					taskId: id,
-					status: status,
+					status,
 				},
 				optimisticResponse: {
 					updateTaskStatus: {
 						__typename: "Task",
 						id,
-						status: status,
+						status,
 						title,
 						projectId,
+						clientMutationId,
 					},
 				},
 			});
@@ -169,23 +166,39 @@ const DashboardClient = () => {
 			toast.error(`Task status update failed ${error}`);
 		}
 	};
+	const setTaskCreatePending = (projectId: string, isPending: boolean) => {
+		const nextPendingIds = new Set(pendingTaskProjectIdsRef.current);
+
+		if (isPending) {
+			nextPendingIds.add(projectId);
+		} else {
+			nextPendingIds.delete(projectId);
+		}
+
+		pendingTaskProjectIdsRef.current = nextPendingIds;
+		setPendingTaskProjectIds(nextPendingIds);
+	};
+
 	const handleClick = async (id: string) => {
 		const title = titles[id]?.trim();
+		if (!title || pendingTaskProjectIdsRef.current.has(id)) return;
+
 		const clientMutationId = crypto.randomUUID();
-		if (!title) return;
-		if (isOffline) {
-			await addtoQueue({
-				__typename: "Task",
-				id: `temp-${clientMutationId}`,
-				title: title,
-				status: "TODO",
-				projectId: id,
-			});
-			toast.info("Saved offline. Will sync later.");
-			return;
-		} else {
-			try {
-				createTask({
+		setTaskCreatePending(id, true);
+
+		try {
+			if (isOffline) {
+				await addtoQueue({
+					__typename: "Task",
+					id: `temp-${clientMutationId}`,
+					title,
+					status: "TODO",
+					projectId: id,
+					clientMutationId,
+				});
+				toast.info("Saved offline. Will sync later.");
+			} else {
+				await createTask({
 					variables: {
 						projectId: id,
 						title,
@@ -232,16 +245,19 @@ const DashboardClient = () => {
 					},
 				});
 				toast.success("Task created Successfully");
-			} catch (error) {
-				toast.error(`Failed to create task ${error}`);
 			}
-		}
 
-		setTitles((prev) => ({
-			...prev,
-			[id]: "",
-		}));
+			setTitles((prev) => ({
+				...prev,
+				[id]: "",
+			}));
+		} catch (error) {
+			toast.error(`Failed to create task ${error}`);
+		} finally {
+			setTaskCreatePending(id, false);
+		}
 	};
+
 	const initialProjects = useMemo(() => data?.projects ?? [], [data?.projects]);
 	const deferredProjectStatusFilter = useDeferredValue(projectStatus);
 	const hasActiveFilters = useMemo(
@@ -253,11 +269,7 @@ const DashboardClient = () => {
 	);
 
 	const filteredProjects = useMemo(
-		() =>
-			initialProjects.filter((project) => {
-				if (deferredProjectStatusFilter === "ALL") return initialProjects;
-				return project.status === deferredProjectStatusFilter;
-			}),
+		() => filterProjectsByStatus(initialProjects, deferredProjectStatusFilter),
 		[initialProjects, deferredProjectStatusFilter],
 	);
 
@@ -303,14 +315,14 @@ const DashboardClient = () => {
 			new URL("../../workers/analytics.worker.ts", import.meta.url),
 		);
 
-		worker.postMessage(data.projects);
+		worker.postMessage(initialProjects);
 
 		worker.onmessage = (event) => {
 			setAnalytics(event.data);
 		};
 
 		return () => worker.terminate();
-	}, [data]);
+	}, [initialProjects]);
 
 	useEffect(() => {
 		const updateOnlineStatus = () => {
@@ -341,10 +353,10 @@ const DashboardClient = () => {
 			<div className='mx-auto max-w-5xl space-y-6'>
 				<AnalyticsComponent
 					analytics={analytics}
-					projects={data?.projects ?? []}
+					projects={initialProjects}
 				/>
 				<KanbanBoard
-					projects={data?.projects ?? []}
+					projects={initialProjects}
 					onMoveTask={handleMoveTask}
 				/>
 				<CreateProject />
@@ -361,6 +373,7 @@ const DashboardClient = () => {
 								setProjectStatus={setProjectStatus}
 								taskStatusFilter={taskStatusFilter}
 								setTaskStatusFilter={setTaskStatusFilter}
+								taskSearchQuery={taskSearchQuery}
 								setTaskSearchQuery={setTaskSearchQuery}
 								clearFilters={clearFilters}
 								hasActiveFilters={hasActiveFilters}
@@ -378,6 +391,7 @@ const DashboardClient = () => {
 										titles={titles}
 										setTitles={setTitles}
 										handleClick={handleClick}
+										isCreatingTask={pendingTaskProjectIds.has(project.id)}
 										taskSearchQuery={taskSearchQuery}
 										taskStatusFilter={taskStatusFilter}
 									/>

@@ -1,4 +1,10 @@
-import { Project, Task, TaskStatus } from "@/app/utils/types";
+import { Project, TaskStatus } from "@/app/utils/types";
+import {
+	buildKanbanTaskGroups,
+	TASK_STATUS_COLUMNS,
+	type KanbanTask,
+} from "@/lib/dashboard-utils";
+import { useMemo } from "react";
 import {
 	DndContext,
 	DragEndEvent,
@@ -7,28 +13,22 @@ import {
 } from "@dnd-kit/core";
 import { ChevronDown } from "lucide-react";
 
-const columns: TaskStatus[] = ["TODO", "IN_PROGRESS", "DONE"];
 type KanbanBoardProps = {
 	projects: Project[];
-	onMoveTask: (
-		task: Task & { projectName: string },
-		status: TaskStatus,
-	) => void;
+	onMoveTask: (task: KanbanTask, status: TaskStatus) => void;
 };
 const KanbanBoard = ({ projects, onMoveTask }: KanbanBoardProps) => {
-	const tasks = projects.flatMap((project) =>
-		project.tasks.map((task) => ({
-			...task,
-			projectName: project.name,
-		})),
+	const { tasksByStatus, tasksById } = useMemo(
+		() => buildKanbanTaskGroups(projects),
+		[projects],
 	);
 
 	const handleDragEnd = (event: DragEndEvent) => {
 		const taskId = String(event.active.id);
 		const nextStatus = event.over?.id as TaskStatus | undefined;
 		if (!nextStatus) return;
-		if (!columns.includes(nextStatus)) return;
-		const task = tasks.find((task) => task.id === taskId);
+		if (!TASK_STATUS_COLUMNS.includes(nextStatus)) return;
+		const task = tasksById.get(taskId);
 		if (!task || task.status === nextStatus) return;
 		onMoveTask(task, nextStatus);
 	};
@@ -36,11 +36,11 @@ const KanbanBoard = ({ projects, onMoveTask }: KanbanBoardProps) => {
 	return (
 		<DndContext onDragEnd={handleDragEnd}>
 			<div className='grid min-h-6 gap-4 md:grid-cols-3'>
-				{columns.map((status) => (
+				{TASK_STATUS_COLUMNS.map((status) => (
 					<KanbanColumn
 						key={status}
 						status={status}
-						tasks={tasks.filter((task) => task.status === status)}
+						tasks={tasksByStatus.get(status) ?? []}
 					/>
 				))}
 			</div>
@@ -53,7 +53,7 @@ const KanbanColumn = ({
 	tasks,
 }: {
 	status: TaskStatus;
-	tasks: Array<Task & { projectName: string }>;
+	tasks: KanbanTask[];
 }) => {
 	const { setNodeRef, isOver } = useDroppable({
 		id: status,
@@ -77,7 +77,7 @@ const KanbanColumn = ({
 				</summary>
 				<div className='space-y-3'>
 					{tasks.map((task) => (
-						<KanbanTask key={task.id} task={task} />
+						<KanbanTaskCard key={task.id} task={task} />
 					))}
 				</div>
 			</details>
@@ -89,7 +89,7 @@ const formatStatus = (status: TaskStatus) => {
 	return status.replace("_", " ");
 };
 
-const KanbanTask = ({ task }: { task: Task & { projectName: string } }) => {
+const KanbanTaskCard = ({ task }: { task: KanbanTask }) => {
 	const { attributes, listeners, setNodeRef, transform, isDragging } =
 		useDraggable({
 			id: task.id,

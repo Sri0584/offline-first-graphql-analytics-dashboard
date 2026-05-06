@@ -2,7 +2,7 @@ import {
 	Dispatch,
 	SetStateAction,
 	startTransition,
-	useMemo,
+	useEffect,
 	useState,
 } from "react";
 import {
@@ -19,6 +19,7 @@ import {
 	TaskStatusFilter,
 	taskStatusOptions,
 } from "@/app/utils/types";
+import { normalizeTaskSearchQuery } from "@/lib/dashboard-utils";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 
@@ -51,6 +52,7 @@ type FilterSearchComponentProps = {
 	setProjectStatus: Dispatch<SetStateAction<ProjectStatusFilter>>;
 	taskStatusFilter: TaskStatusFilter;
 	setTaskStatusFilter: Dispatch<SetStateAction<TaskStatusFilter>>;
+	taskSearchQuery: string;
 	setTaskSearchQuery: Dispatch<SetStateAction<string>>;
 	clearFilters: () => void;
 	hasActiveFilters: boolean;
@@ -61,6 +63,7 @@ const FilterSearchComponent = ({
 	setProjectStatus,
 	taskStatusFilter,
 	setTaskStatusFilter,
+	taskSearchQuery,
 	setTaskSearchQuery,
 	clearFilters,
 	hasActiveFilters,

@@ -1,4 +1,5 @@
 import { type Task, type Project, TaskStatusFilter } from "@/app/utils/types";
+import { filterTasks } from "@/lib/dashboard-utils";
 import TaskComponent from "./TaskComponent";
 import ProjectCRUD from "./ProjectCRUD";
 import { Input } from "../ui/input";
@@ -16,6 +17,7 @@ type ProjectComponentProps = {
 	titles: Record<string, string>;
 	setTitles: Dispatch<SetStateAction<Record<string, string>>>;
 	handleClick: (id: string) => void;
+	isCreatingTask: boolean;
 	taskStatusFilter: TaskStatusFilter;
 	taskSearchQuery: string;
 };
@@ -25,6 +27,7 @@ const ProjectComponent = ({
 	handleClick,
 	titles,
 	setTitles,
+	isCreatingTask,
 	taskStatusFilter,
 	taskSearchQuery,
 }: ProjectComponentProps) => {
@@ -39,19 +42,7 @@ const ProjectComponent = ({
 	};
 	const deferredTaskStatusFilter = useDeferredValue(taskStatusFilter);
 	const filteredTasks = useMemo(
-		() =>
-			project?.tasks.filter((task) => {
-				if (deferredTaskStatusFilter === "ALL") {
-					return taskSearchQuery === "" ?
-							project?.tasks
-						:	task.title.toLowerCase().includes(taskSearchQuery);
-				}
-
-				return (
-					task.status === deferredTaskStatusFilter &&
-					task.title.toLowerCase().includes(taskSearchQuery)
-				);
-			}),
+		() => filterTasks(project.tasks, deferredTaskStatusFilter, taskSearchQuery),
 		[project.tasks, taskSearchQuery, deferredTaskStatusFilter],
 	);
 
@@ -77,16 +68,16 @@ const ProjectComponent = ({
 						className='rounded border px-2 py-1 text-sm'
 						placeholder='New task...'
 						value={titles[id] || ""}
-						disabled={isDisabled}
+						disabled={isDisabled || isCreatingTask}
 						onChange={handleChange}
 					/>
 
 					<Button
 						className='rounded bg-primary px-3 text-sm text-primary-foreground'
 						onClick={() => handleClick(id)}
-						disabled={isDisabled}
+						disabled={isDisabled || isCreatingTask || !titles[id]?.trim()}
 					>
-						Add
+						{isCreatingTask ? "Adding..." : "Add"}
 					</Button>
 				</div>
 			</div>
