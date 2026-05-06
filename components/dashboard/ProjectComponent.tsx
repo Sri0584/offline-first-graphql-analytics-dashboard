@@ -1,14 +1,23 @@
-import { type Task, type Project } from "@/app/utils/types";
+import { type Task, type Project, TaskStatusFilter } from "@/app/utils/types";
 import TaskComponent from "./TaskComponent";
 import ProjectCRUD from "./ProjectCRUD";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
+import {
+	ChangeEvent,
+	Dispatch,
+	SetStateAction,
+	useDeferredValue,
+	useMemo,
+} from "react";
 
 type ProjectComponentProps = {
 	project: Project;
 	titles: Record<string, string>;
-	setTitles: React.Dispatch<React.SetStateAction<Record<string, string>>>;
+	setTitles: Dispatch<SetStateAction<Record<string, string>>>;
 	handleClick: (id: string) => void;
+	taskStatusFilter: TaskStatusFilter;
+	taskSearchQuery: string;
 };
 
 const ProjectComponent = ({
@@ -16,15 +25,35 @@ const ProjectComponent = ({
 	handleClick,
 	titles,
 	setTitles,
+	taskStatusFilter,
+	taskSearchQuery,
 }: ProjectComponentProps) => {
 	const { id, status } = project;
 	const isDisabled = status !== "ACTIVE";
-	const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+
+	const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
 		setTitles((prev) => ({
 			...prev,
 			[id]: e.target.value,
 		}));
 	};
+	const deferredTaskStatusFilter = useDeferredValue(taskStatusFilter);
+	const filteredTasks = useMemo(
+		() =>
+			project?.tasks.filter((task) => {
+				if (deferredTaskStatusFilter === "ALL") {
+					return taskSearchQuery === "" ?
+							project?.tasks
+						:	task.title.toLowerCase().includes(taskSearchQuery);
+				}
+
+				return (
+					task.status === deferredTaskStatusFilter &&
+					task.title.toLowerCase().includes(taskSearchQuery)
+				);
+			}),
+		[project.tasks, taskSearchQuery, deferredTaskStatusFilter],
+	);
 
 	return (
 		<div key={id} className='rounded-lg border p-4'>
@@ -35,7 +64,11 @@ const ProjectComponent = ({
 
 				{project.tasks.length === 0 ?
 					<p className='text-sm text-muted-foreground'>No tasks yet</p>
-				:	project.tasks.map((task: Task) => (
+				: filteredTasks?.length === 0 ?
+					<p className='text-sm text-muted-foreground'>
+						No tasks for the filter selected
+					</p>
+				:	filteredTasks.map((task: Task) => (
 						<TaskComponent task={task} key={task.id} projectId={id} />
 					))
 				}

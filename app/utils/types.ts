@@ -88,3 +88,28 @@ export type CreateTaskArgs = {
 	title: string;
 	clientMutationId?: string | null;
 };
+
+export type ProjectStatusFilter = "ALL" | "ACTIVE" | "ARCHIVED";
+
+export type TaskStatusFilter = "ALL" | "TODO" | "IN_PROGRESS" | "DONE";
+
+export const projectStatusOptions: {
+	label: string;
+	value: ProjectStatusFilter;
+}[] = [
+	{ label: "All projects", value: "ALL" },
+	{ label: "Active", value: "ACTIVE" },
+	{ label: "Archived", value: "ARCHIVED" },
+];
+
+export const taskStatusOptions: { label: string; value: TaskStatusFilter }[] = [
+	{ label: "All tasks", value: "ALL" },
+	{ label: "To do", value: "TODO" },
+	{ label: "In progress", value: "IN_PROGRESS" },
+	{ label: "Done", value: "DONE" },
+];
+
+export const getOptionLabel = <T extends string>(
+	options: { label: string; value: T }[],
+	value: T,
+) => options.find((option) => option.value === value)?.label ?? value;

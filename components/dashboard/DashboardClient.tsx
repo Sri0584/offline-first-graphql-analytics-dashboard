@@ -1,8 +1,14 @@
 "use client";
 import { useQuery, useMutation, useSubscription } from "@apollo/client/react";
-import { Suspense, useEffect, useState } from "react";
+import {
+	startTransition,
+	Suspense,
+	useDeferredValue,
+	useEffect,
+	useMemo,
+	useState,
+} from "react";
 import dynamic from "next/dynamic";
-import { gql } from "@apollo/client";
 import { addtoQueue, clearQueue, getQueue } from "@/lib/offline-queue";
 import {
 	CREATE_TASK,
@@ -11,20 +17,23 @@ import {
 	TASK_FRAGMENT,
 	UPDATE_TASK_STATUS,
 } from "@/app/utils/gql-queries";
-import {
-	AnalyticsObj,
+import type {
 	CreateTaskResponse,
 	CreateTaskVariables,
 	Project,
+	ProjectStatusFilter,
 	Task,
 	TaskCreatedSubscriptionResponse,
 	TaskStatus,
+	TaskStatusFilter,
+	AnalyticsObj,
 } from "@/app/utils/types";
 import type { Reference } from "@apollo/client/cache";
 import { toast } from "sonner";
 
 import DashboardSkeleton from "./DashboardSkeleton";
 import CardComponent from "@/components/dashboard/CardComponent";
+import FilterSearchComponent from "./FilterSearchComponent";
 
 const KanbanBoard = dynamic(() => import("./KanbanBoard"), {
 	loading: () => (
@@ -95,6 +104,11 @@ const DashboardClient = () => {
 	const [createTask] = useMutation<CreateTaskResponse, CreateTaskVariables>(
 		CREATE_TASK,
 	);
+	const [projectStatus, setProjectStatus] =
+		useState<ProjectStatusFilter>("ALL");
+	const [taskStatusFilter, setTaskStatusFilter] =
+		useState<TaskStatusFilter>("ALL");
+	const [taskSearchQuery, setTaskSearchQuery] = useState("");
 
 	useSubscription<TaskCreatedSubscriptionResponse>(TASK_CREATED_SUBSCRIPTION, {
 		onData: ({ client, data }) => {
@@ -228,6 +242,32 @@ const DashboardClient = () => {
 			[id]: "",
 		}));
 	};
+	const initialProjects = useMemo(() => data?.projects ?? [], [data?.projects]);
+	const deferredProjectStatusFilter = useDeferredValue(projectStatus);
+	const hasActiveFilters = useMemo(
+		() =>
+			projectStatus !== "ALL" ||
+			taskStatusFilter !== "ALL" ||
+			taskSearchQuery.trim().length > 0,
+		[projectStatus, taskStatusFilter, taskSearchQuery],
+	);
+
+	const filteredProjects = useMemo(
+		() =>
+			initialProjects.filter((project) => {
+				if (deferredProjectStatusFilter === "ALL") return initialProjects;
+				return project.status === deferredProjectStatusFilter;
+			}),
+		[initialProjects, deferredProjectStatusFilter],
+	);
+
+	const clearFilters = () => {
+		startTransition(() => {
+			setProjectStatus("ALL");
+			setTaskStatusFilter("ALL");
+			setTaskSearchQuery("");
+		});
+	};
 
 	useEffect(() => {
 		const sync = async () => {
@@ -308,22 +348,41 @@ const DashboardClient = () => {
 					onMoveTask={handleMoveTask}
 				/>
 				<CreateProject />
+
 				<CardComponent title='Projects'>
 					<Suspense
 						fallback={
 							<div className='h-24 animate-pulse rounded-md bg-muted/40' />
 						}
 					>
+						<div className='space-y-4'>
+							<FilterSearchComponent
+								projectStatus={projectStatus}
+								setProjectStatus={setProjectStatus}
+								taskStatusFilter={taskStatusFilter}
+								setTaskStatusFilter={setTaskStatusFilter}
+								setTaskSearchQuery={setTaskSearchQuery}
+								clearFilters={clearFilters}
+								hasActiveFilters={hasActiveFilters}
+							/>
+						</div>
 						<div className='space-y-3'>
-							{data?.projects.map((project) => (
-								<ProjectComponent
-									key={project.id}
-									project={project}
-									titles={titles}
-									setTitles={setTitles}
-									handleClick={handleClick}
-								/>
-							))}
+							{filteredProjects?.length === 0 ?
+								<p className='rounded-lg border border-dashed p-4 text-sm text-muted-foreground'>
+									No projects match the current filters
+								</p>
+							:	filteredProjects.map((project) => (
+									<ProjectComponent
+										key={project.id}
+										project={project}
+										titles={titles}
+										setTitles={setTitles}
+										handleClick={handleClick}
+										taskSearchQuery={taskSearchQuery}
+										taskStatusFilter={taskStatusFilter}
+									/>
+								))
+							}
 						</div>
 					</Suspense>
 				</CardComponent>

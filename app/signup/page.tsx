@@ -1,6 +1,7 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 import { toast } from "sonner";
 
@@ -8,6 +9,8 @@ const SignUpPage = () => {
 	const [name, setName] = useState("");
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
+	const router = useRouter();
+
 	const handleSignup = async (e: React.SubmitEvent<HTMLFormElement>) => {
 		e.preventDefault();
 		try {
@@ -30,7 +33,7 @@ const SignUpPage = () => {
 			}
 
 			toast.success("Account created successfully!");
-			window.location.href = `/login?email=${encodeURIComponent(email)}`;
+			router.push(`/login?email=${encodeURIComponent(email)}`);
 		} catch (error) {
 			console.log(error, "error");
 
