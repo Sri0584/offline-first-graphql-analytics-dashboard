@@ -1,23 +1,6 @@
 https://main.d2571517qali19.amplifyapp.com/dashboard
 
-prisma commands
-npx prisma migrate reset - 
-This will:
-drop all tables
-recreate schema
-rerun migrations
-regenerate Prisma client
 
-px prisma migrate dev --name add-task-client-mutation-id - Add field to Prisma Task
-Remove-Item -Recurse -Force node_modules\.prisma -ErrorAction SilentlyContinue
-Remove-Item -Recurse -Force node_modules\@prisma -ErrorAction SilentlyContinue
-Delete generated Prisma folders
-Regenerate Prisma client - npx prisma generate
-
-npx prisma db push --force-reset
-npx prisma generate
-
-This will delete existing Neon data and recreate all tables
 
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 Dashboard page
@@ -41,7 +24,8 @@ shadcn/ui
 Apollo Client or urql
 Service Worker for offline cache + background sync
 Web Worker for heavy analytics/chart calculations
-React concurrent features: Suspense, useTransition, useDeferredValue
+React concurrent features: Suspense, startTransition, useDeferredValue
+Filters for Project , tasks on status, debounced search on Tasks
 
 Backend:
 
@@ -92,6 +76,26 @@ Optimistic UI
 Offline queue
 Service Worker
 Web Worker
+
+prisma commands
+npx prisma migrate reset - 
+This will:
+drop all tables
+recreate schema
+rerun migrations
+regenerate Prisma client
+
+px prisma migrate dev --name add-task-client-mutation-id - Add field to Prisma Task
+Remove-Item -Recurse -Force node_modules\.prisma -ErrorAction SilentlyContinue
+Remove-Item -Recurse -Force node_modules\@prisma -ErrorAction SilentlyContinue
+Delete generated Prisma folders
+Regenerate Prisma client - npx prisma generate
+
+npx prisma db push --force-reset
+npx prisma generate
+
+This will delete existing Neon data and recreate all tables
+
 Server-Sent Events (SSE) with GraphQL Yoga and Apollo Client
 
 Subscriptions - what exactly did the subscriptions do here,
