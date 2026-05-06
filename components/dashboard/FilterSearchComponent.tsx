@@ -3,6 +3,7 @@ import {
 	SetStateAction,
 	startTransition,
 	useEffect,
+	useMemo,
 	useState,
 } from "react";
 import {
@@ -19,7 +20,6 @@ import {
 	TaskStatusFilter,
 	taskStatusOptions,
 } from "@/app/utils/types";
-import { normalizeTaskSearchQuery } from "@/lib/dashboard-utils";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 
