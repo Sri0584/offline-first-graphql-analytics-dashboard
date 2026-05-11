@@ -1,5 +1,10 @@
 import LoginForm from "@/components/dashboard/LoginForm";
-import { Suspense } from "react";
+
+type LoginPageProps = {
+	searchParams: Promise<{
+		email?: string | string[];
+	}>;
+};
 // Category
 // SSG/static shell with client hydration.
 // Why
@@ -9,13 +14,14 @@ import { Suspense } from "react";
 // Why not SSR?
 // Because the login page does not need to know the logged-in user before rendering. It can show the same
 // initial login form to everyone.
-const LoginPage = () => {
+const LoginPage = async ({ searchParams }: LoginPageProps) => {
+	const params = await searchParams;
+	const initialEmail =
+		typeof params.email === "string" ? params.email : (params.email?.[0] ?? "");
+
 	return (
 		<main className='flex min-h-screen items-center justify-center p-6'>
-			<Suspense fallback={<div>Loading...</div>}>
-				{/* In the Next.js App Router, useSearchParams() is an async client-side hook that must be rendered inside a React Suspense boundary. */}
-				<LoginForm />
-			</Suspense>
+			<LoginForm initialEmail={initialEmail} />
 		</main>
 	);
 };
