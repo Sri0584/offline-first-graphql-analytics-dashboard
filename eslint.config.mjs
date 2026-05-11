@@ -8,6 +8,7 @@ const boundaryElements = [
   { type: "generated", pattern: "app/generated/**", mode: "full" },
   { type: "api-route", pattern: "app/api/**", mode: "full" },
   { type: "app-route", pattern: "app/**", mode: "full" },
+  // The Apollo provider is the only component allowed to bootstrap MSW in development.
   { type: "provider", pattern: "components/apollo-provider.tsx", mode: "full" },
   { type: "ui", pattern: "components/ui/**", mode: "full" },
   { type: "dashboard-component", pattern: "components/dashboard/**", mode: "full" },
@@ -28,6 +29,7 @@ const boundaryDependencyRules = [
   },
   {
     from: { type: "provider" },
+    // Keep mock imports scoped to the provider so regular components cannot depend on mocks.
     allow: { to: { type: ["provider", "component", "dashboard-component", "ui", "lib", "mock", "generated"] } },
   },
   {
