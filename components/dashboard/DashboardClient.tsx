@@ -309,7 +309,7 @@ const DashboardClient = () => {
 	}, [createTask]);
 
 	useEffect(() => {
-		if (!data?.projects) return;
+		if (!initialProjects) return;
 
 		const worker = new Worker(
 			new URL("../../workers/analytics.worker.ts", import.meta.url),
@@ -351,14 +351,8 @@ const DashboardClient = () => {
 	return (
 		<main className='min-h-screen bg-background p-6'>
 			<div className='mx-auto max-w-5xl space-y-6'>
-				<AnalyticsComponent
-					analytics={analytics}
-					projects={initialProjects}
-				/>
-				<KanbanBoard
-					projects={initialProjects}
-					onMoveTask={handleMoveTask}
-				/>
+				<AnalyticsComponent analytics={analytics} projects={initialProjects} />
+				<KanbanBoard projects={initialProjects} onMoveTask={handleMoveTask} />
 				<CreateProject />
 
 				<CardComponent title='Projects'>

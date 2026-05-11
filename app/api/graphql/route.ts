@@ -8,6 +8,7 @@ import { getServerSession, Session } from "next-auth";
 export type GraphQLContext = {
 	session: Session | null;
 };
+
 // Made the GraphQL route explicitly dynamic on the Node.js runtime for long-lived Yoga/SSE subscription handling,
 // and aligned clientMutationId with the nullable Prisma field so subscription payloads with older/null values do not violate the schema.
 export const runtime = "nodejs";

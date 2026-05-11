@@ -113,3 +113,9 @@ export const getOptionLabel = <T extends string>(
 	options: { label: string; value: T }[],
 	value: T,
 ) => options.find((option) => option.value === value)?.label ?? value;
+
+export type LoginPageProps = {
+	searchParams: Promise<{
+		email?: string | string[];
+	}>;
+};

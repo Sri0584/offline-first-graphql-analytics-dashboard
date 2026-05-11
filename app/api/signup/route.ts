@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcrypt";
-
+// This route handles POST requests, reads the request body, checks Prisma for an existing user, hashes the password, creates a user, and returns JSON.
+// That is not SSG or SSR. It is server-side API logic.
 export async function POST(req: Request) {
 	const body = await req.json();
 
