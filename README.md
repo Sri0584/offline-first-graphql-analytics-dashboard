@@ -211,3 +211,21 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+## Mocking GraphQL with MSW
+
+Set `NEXT_PUBLIC_API_MOCKING=enabled` before starting the app to intercept dashboard GraphQL traffic with Mock Service Worker instead of calling `/api/graphql` on the real server:
+
+```bash
+NEXT_PUBLIC_API_MOCKING=enabled npm run dev
+```
+
+The browser worker is started inside the Apollo provider before dashboard children render, so the initial `GetProjects` request is mocked as well. The mock handlers live in `mocks/handlers.ts` and use an in-memory project/task store from `mocks/data.ts` to support realistic reads, mutations, validation errors, not-found responses, and a small artificial delay.
+
+To simulate a one-off GraphQL failure from DevTools while mocking is enabled, run:
+
+```js
+localStorage.setItem("mockGraphQL:failNext", "true");
+```
+
+Then perform the next dashboard action. The following mocked request will return a GraphQL error response and the flag will be cleared automatically.

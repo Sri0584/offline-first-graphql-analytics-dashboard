@@ -11,6 +11,7 @@ import type { FetchResult } from "@apollo/client";
 import { getMainDefinition } from "@apollo/client/utilities";
 import { createClient } from "graphql-sse";
 import { print } from "graphql";
+import { isGraphQLMockingEnabled } from "@/lib/api-mocking";
 // Sent same-origin credentials on both GraphQL HTTP and SSE links so authenticated dashboard tabs keep cookies attached consistently.
 const httpLink = new HttpLink({
 	uri: "/api/graphql",
@@ -18,7 +19,7 @@ const httpLink = new HttpLink({
 });
 
 const sseClient =
-	typeof window !== "undefined" ?
+	typeof window !== "undefined" && !isGraphQLMockingEnabled() ?
 		createClient({
 			url: "/api/graphql",
 			credentials: "same-origin",
@@ -29,7 +30,7 @@ const sseLink = new ApolloLink((operation) => {
 	return new Observable<FetchResult>((observer) => {
 		if (!sseClient) {
 			observer.complete();
-			return;
+			return undefined;
 		}
 
 		const unsubscribe = sseClient.subscribe(
