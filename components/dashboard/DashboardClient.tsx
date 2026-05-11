@@ -19,12 +19,8 @@ import {
 	UPDATE_TASK_STATUS,
 } from "@/app/utils/gql-queries";
 import type {
-	CreateTaskResponse,
-	CreateTaskVariables,
-	Project,
 	ProjectStatusFilter,
 	Task,
-	TaskCreatedSubscriptionResponse,
 	TaskStatus,
 	TaskStatusFilter,
 } from "@/app/utils/types";
@@ -89,7 +85,7 @@ const upsertTaskRef = (
 const DashboardClient = () => {
 	const [isOffline, setIsOffline] = useState(false);
 
-	const { data, loading, error } = useQuery<{ projects: Project[] }>(
+	const { data, loading, error } = useQuery(
 		GET_PROJECTS,
 		{
 			fetchPolicy: "cache-and-network",
@@ -103,16 +99,14 @@ const DashboardClient = () => {
 		Set<string>
 	>(() => new Set());
 	const pendingTaskProjectIdsRef = useRef(new Set<string>());
-	const [createTask] = useMutation<CreateTaskResponse, CreateTaskVariables>(
-		CREATE_TASK,
-	);
+	const [createTask] = useMutation(CREATE_TASK);
 	const [projectStatus, setProjectStatus] =
 		useState<ProjectStatusFilter>("ALL");
 	const [taskStatusFilter, setTaskStatusFilter] =
 		useState<TaskStatusFilter>("ALL");
 	const [taskSearchQuery, setTaskSearchQuery] = useState("");
 
-	useSubscription<TaskCreatedSubscriptionResponse>(TASK_CREATED_SUBSCRIPTION, {
+	useSubscription(TASK_CREATED_SUBSCRIPTION, {
 		onData: ({ client, data }) => {
 			const newTask = data.data?.taskCreated;
 

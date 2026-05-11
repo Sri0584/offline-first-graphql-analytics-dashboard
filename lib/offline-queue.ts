@@ -1,4 +1,4 @@
-import { Task } from "@/app/utils/types";
+import type { Task } from "@/app/utils/types";
 import { getDB } from "./offline-db";
 
 export const addtoQueue = async (task: Task) => {
@@ -6,7 +6,7 @@ export const addtoQueue = async (task: Task) => {
 	await db.put("tasks", task);
 };
 
-export async function getQueue() {
+export async function getQueue(): Promise<Task[]> {
 	const db = await getDB();
 	return db.getAll("tasks");
 }

@@ -3,20 +3,13 @@ import { useMutation } from "@apollo/client/react";
 import { useRef, useState } from "react";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
-import {
-	CreateProjectResponse,
-	CreateProjectVariables,
-} from "@/app/utils/types";
 import { toast } from "sonner";
 
 const CreateProject = () => {
 	const [projectName, setProjectName] = useState("");
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const isSubmittingRef = useRef(false);
-	const [createProject] = useMutation<
-		CreateProjectResponse,
-		CreateProjectVariables
-	>(CREATE_PROJECT);
+	const [createProject] = useMutation(CREATE_PROJECT);
 
 	const handleCreateProject = async () => {
 		const name = projectName.trim();
