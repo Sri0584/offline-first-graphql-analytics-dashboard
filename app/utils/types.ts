@@ -47,5 +47,3 @@ export type LoginPageProps = {
 		email?: string | string[];
 	}>;
 };
-
-export type { ProjectStatus, TaskStatus };
