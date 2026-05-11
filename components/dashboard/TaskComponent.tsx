@@ -20,9 +20,7 @@ const TaskComponent = ({ task, projectId }: TaskComponentProps) => {
 			updateTaskStatus({
 				variables: {
 					taskId: id,
-					title,
 					status: nextStatus,
-					projectId,
 				},
 				optimisticResponse: {
 					updateTaskStatus: {
@@ -31,6 +29,7 @@ const TaskComponent = ({ task, projectId }: TaskComponentProps) => {
 						title,
 						status: nextStatus,
 						projectId,
+						clientMutationId: task.clientMutationId,
 					},
 				},
 			});
