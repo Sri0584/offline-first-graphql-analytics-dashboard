@@ -8,6 +8,7 @@ const boundaryElements = [
   { type: "generated", pattern: "app/generated/**", mode: "full" },
   { type: "api-route", pattern: "app/api/**", mode: "full" },
   { type: "app-route", pattern: "app/**", mode: "full" },
+  { type: "provider", pattern: "components/apollo-provider.tsx", mode: "full" },
   { type: "ui", pattern: "components/ui/**", mode: "full" },
   { type: "dashboard-component", pattern: "components/dashboard/**", mode: "full" },
   { type: "component", pattern: "components/**", mode: "full" },
@@ -23,7 +24,11 @@ const boundaryElements = [
 const boundaryDependencyRules = [
   {
     from: { type: ["app-route", "api-route"] },
-    allow: { to: { type: ["app-route", "api-route", "component", "dashboard-component", "ui", "lib", "generated"] } },
+    allow: { to: { type: ["app-route", "api-route", "provider", "component", "dashboard-component", "ui", "lib", "generated"] } },
+  },
+  {
+    from: { type: "provider" },
+    allow: { to: { type: ["provider", "component", "dashboard-component", "ui", "lib", "mock", "generated"] } },
   },
   {
     from: { type: ["component", "dashboard-component"] },
@@ -47,7 +52,7 @@ const boundaryDependencyRules = [
   },
   {
     from: { type: "test" },
-    allow: { to: { type: ["app-route", "api-route", "component", "dashboard-component", "ui", "lib", "generated", "mock", "worker"] } },
+    allow: { to: { type: ["app-route", "api-route", "provider", "component", "dashboard-component", "ui", "lib", "generated", "mock", "worker"] } },
   },
   {
     from: { type: "config" },
