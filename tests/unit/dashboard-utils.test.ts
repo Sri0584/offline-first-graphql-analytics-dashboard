@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { Project } from "@/app/utils/types";
+import type { Project } from "@/lib/graphql/types";
 import {
 	buildKanbanTaskGroups,
 	calculateAnalytics,

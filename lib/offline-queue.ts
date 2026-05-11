@@ -1,4 +1,4 @@
-import type { Task } from "@/app/utils/types";
+import type { Task } from "@/lib/graphql/types";
 import { getDB } from "./offline-db";
 
 export const addtoQueue = async (task: Task) => {

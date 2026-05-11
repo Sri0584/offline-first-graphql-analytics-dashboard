@@ -1,4 +1,4 @@
-import { Project, TaskStatus } from "@/app/utils/types";
+import { Project, TaskStatus } from "@/lib/graphql/types";
 import {
 	buildKanbanTaskGroups,
 	TASK_STATUS_COLUMNS,

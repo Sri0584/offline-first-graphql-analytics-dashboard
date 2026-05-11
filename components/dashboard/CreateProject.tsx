@@ -1,8 +1,8 @@
-import { CREATE_PROJECT, PROJECT_FRAGMENT } from "@/app/utils/gql-queries";
+import { CREATE_PROJECT, PROJECT_FRAGMENT } from "@/lib/graphql/gql-queries";
 import { useMutation } from "@apollo/client/react";
 import { useRef, useState } from "react";
-import { Input } from "../ui/input";
-import { Button } from "../ui/button";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
 const CreateProject = () => {

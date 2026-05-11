@@ -1,5 +1,5 @@
 import { graphql, HttpResponse, delay } from "msw";
-import type { TaskStatus } from "@/app/utils/types";
+import type { TaskStatus } from "@/lib/graphql/types";
 import {
 	createMockProject,
 	createMockTask,

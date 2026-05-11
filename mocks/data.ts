@@ -1,4 +1,4 @@
-import type { Project, Task, TaskStatus } from "@/app/utils/types";
+import type { Project, Task, TaskStatus } from "@/lib/graphql/types";
 
 export type MockProject = Project & {
 	createdAt: string;

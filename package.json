@@ -9,7 +9,7 @@
 		"lint": "eslint",
 		"test:e2e": "npx playwright test",
 		"test": "vitest run --coverage",
-		"msw:init": "msw init public/ --save"
+		"msw:init": "msw init public/ --save",
 		"codegen": "graphql-codegen --config codegen.ts"
 	},
 	"dependencies": {
@@ -64,6 +64,7 @@
 		"prisma": "6.19.3",
 		"tailwindcss": "^4",
 		"typescript": "^5",
-		"msw": "2.4.4"
+		"msw": "2.4.4",
+		"eslint-plugin-boundaries": "^6.0.2"
 	}
 }

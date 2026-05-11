@@ -1,5 +1,5 @@
 "use client";
-import { AnalyticsObj, Project } from "@/app/utils/types";
+import { AnalyticsObj, Project } from "@/lib/graphql/types";
 import CardComponent from "./CardComponent";
 import {
 	Bar,
