@@ -17,13 +17,13 @@ import {
 	TASK_CREATED_SUBSCRIPTION,
 	TASK_FRAGMENT,
 	UPDATE_TASK_STATUS,
-} from "@/app/utils/gql-queries";
+} from "@/lib/graphql/gql-queries";
 import type {
 	ProjectStatusFilter,
 	Task,
 	TaskStatus,
 	TaskStatusFilter,
-} from "@/app/utils/types";
+} from "@/lib/graphql/types";
 import type { Reference } from "@apollo/client/cache";
 import { toast } from "sonner";
 

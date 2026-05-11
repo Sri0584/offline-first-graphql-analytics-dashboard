@@ -1,5 +1,5 @@
-import { AnalyticsObj, Project } from "@/app/utils/types";
-import { Button } from "../ui/button";
+import { AnalyticsObj, Project } from "@/lib/graphql/types";
+import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import dynamic from "next/dynamic";

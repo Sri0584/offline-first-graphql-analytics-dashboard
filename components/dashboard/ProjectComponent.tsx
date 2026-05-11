@@ -1,9 +1,9 @@
-import { type Task, type Project, TaskStatusFilter } from "@/app/utils/types";
+import { type Task, type Project, TaskStatusFilter } from "@/lib/graphql/types";
 import { filterTasks } from "@/lib/dashboard-utils";
 import TaskComponent from "./TaskComponent";
 import ProjectCRUD from "./ProjectCRUD";
-import { Input } from "../ui/input";
-import { Button } from "../ui/button";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import {
 	ChangeEvent,
 	Dispatch,

@@ -5,7 +5,7 @@ import type {
 	Task,
 	TaskStatus,
 	TaskStatusFilter,
-} from "@/app/utils/types";
+} from "@/lib/graphql/types";
 
 export type KanbanTask = Task & { projectName: string };
 

@@ -1,8 +1,8 @@
-import { DELETE_TASK, UPDATE_TASK_STATUS } from "@/app/utils/gql-queries";
-import { type Task } from "@/app/utils/types";
+import { DELETE_TASK, UPDATE_TASK_STATUS } from "@/lib/graphql/gql-queries";
+import { type Task } from "@/lib/graphql/types";
 import type { Reference } from "@apollo/client/cache";
 import { useMutation } from "@apollo/client/react";
-import { Button } from "../ui/button";
+import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
 type TaskComponentProps = {

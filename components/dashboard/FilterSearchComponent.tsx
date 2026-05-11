@@ -11,16 +11,16 @@ import {
 	SelectItem,
 	SelectTrigger,
 	SelectValue,
-} from "../ui/select";
+} from "@/components/ui/select";
 import {
 	getOptionLabel,
 	ProjectStatusFilter,
 	projectStatusOptions,
 	TaskStatusFilter,
 	taskStatusOptions,
-} from "@/app/utils/types";
-import { Input } from "../ui/input";
-import { Button } from "../ui/button";
+} from "@/lib/graphql/types";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 type DebouncedFunction<Args extends unknown[]> = {
 	(...args: Args): void;

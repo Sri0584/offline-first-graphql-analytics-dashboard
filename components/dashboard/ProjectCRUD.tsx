@@ -2,12 +2,12 @@ import {
 	DELETE_PROJECT,
 	UPDATE_PROJECT_NAME,
 	UPDATE_PROJECT_STATUS,
-} from "@/app/utils/gql-queries";
+} from "@/lib/graphql/gql-queries";
 import { useMutation } from "@apollo/client/react";
 import { useState } from "react";
-import { Input } from "../ui/input";
-import { Button } from "../ui/button";
-import { type Project } from "@/app/utils/types";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { type Project } from "@/lib/graphql/types";
 import type { Reference } from "@apollo/client/cache";
 import { toast } from "sonner";
 
