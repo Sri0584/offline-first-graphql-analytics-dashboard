@@ -1,54 +1,34 @@
-import { CreateTaskArgs, UpdateTaskStatusArgs } from "@/app/utils/types";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { pubsub, TASK_CREATED } from "@/lib/subpub";
 import { createSchema, createYoga } from "graphql-yoga";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { getServerSession, Session } from "next-auth";
+import type {
+	MutationCreateProjectArgs,
+	MutationCreateTaskArgs,
+	MutationDeleteProjectArgs,
+	MutationDeleteTaskArgs,
+	MutationUpdateProjectNameArgs,
+	MutationUpdateProjectStatusArgs,
+	MutationUpdateTaskStatusArgs,
+	QueryProjectArgs,
+} from "@/app/generated/graphql/server-types";
 
 export type GraphQLContext = {
 	session: Session | null;
 };
+
 // Made the GraphQL route explicitly dynamic on the Node.js runtime for long-lived Yoga/SSE subscription handling,
 // and aligned clientMutationId with the nullable Prisma field so subscription payloads with older/null values do not violate the schema.
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const typeDefs = /* GraphQL */ `
-	type Project {
-		id: ID!
-		name: String!
-		status: String!
-		createdAt: String!
-		tasks: [Task!]!
-	}
-
-	type Task {
-		id: ID!
-		title: String!
-		status: String!
-		createdAt: String!
-		projectId: ID!
-		clientMutationId: String
-	}
-
-	type Query {
-		projects: [Project!]!
-		project(id: ID!): Project
-	}
-
-	type Mutation {
-		createProject(name: String!): Project!
-		updateProjectName(projectId: ID!, name: String!): Project!
-		updateProjectStatus(projectId: ID!, status: String!): Project!
-		deleteProject(projectId: ID!): Project!
-		createTask(projectId: ID!, title: String!, clientMutationId: String): Task!
-		updateTaskStatus(taskId: ID!, status: String!): Task!
-		deleteTask(taskId: ID!): Task!
-	}
-	type Subscription {
-		taskCreated: Task!
-	}
-`;
+const typeDefs = readFileSync(
+	join(process.cwd(), "graphql/schema.graphql"),
+	"utf8",
+);
 
 const resolvers = {
 	Query: {
@@ -72,7 +52,7 @@ const resolvers = {
 		},
 		project: async (
 			_: unknown,
-			args: { id: string },
+			args: QueryProjectArgs,
 			context: GraphQLContext,
 		) => {
 			const userId = context.session?.user?.id;
@@ -99,7 +79,7 @@ const resolvers = {
 	Mutation: {
 		createProject: async (
 			_: unknown,
-			args: { name: string },
+			args: MutationCreateProjectArgs,
 			context: GraphQLContext,
 		) => {
 			const userId = context.session?.user?.id;
@@ -119,7 +99,7 @@ const resolvers = {
 		},
 		updateProjectName: async (
 			_: unknown,
-			args: { projectId: string; name: string },
+			args: MutationUpdateProjectNameArgs,
 		) => {
 			return prisma.project.update({
 				where: { id: args.projectId },
@@ -130,7 +110,7 @@ const resolvers = {
 
 		updateProjectStatus: async (
 			_: unknown,
-			args: { projectId: string; status: string },
+			args: MutationUpdateProjectStatusArgs,
 		) => {
 			return prisma.project.update({
 				where: { id: args.projectId },
@@ -139,13 +119,13 @@ const resolvers = {
 			});
 		},
 
-		deleteProject: async (_: unknown, args: { projectId: string }) => {
+		deleteProject: async (_: unknown, args: MutationDeleteProjectArgs) => {
 			return prisma.project.delete({
 				where: { id: args.projectId },
 				include: { tasks: true },
 			});
 		},
-		createTask: async (_: unknown, args: CreateTaskArgs) => {
+		createTask: async (_: unknown, args: MutationCreateTaskArgs) => {
 			const task = await prisma.task.create({
 				data: {
 					title: args.title,
@@ -161,13 +141,13 @@ const resolvers = {
 
 			return task;
 		},
-		updateTaskStatus: async (_: unknown, args: UpdateTaskStatusArgs) => {
+		updateTaskStatus: async (_: unknown, args: MutationUpdateTaskStatusArgs) => {
 			return prisma.task.update({
 				where: { id: args.taskId },
 				data: { status: args.status },
 			});
 		},
-		deleteTask: async (_: unknown, args: { taskId: string }) => {
+		deleteTask: async (_: unknown, args: MutationDeleteTaskArgs) => {
 			return prisma.task.delete({
 				where: { id: args.taskId },
 			});

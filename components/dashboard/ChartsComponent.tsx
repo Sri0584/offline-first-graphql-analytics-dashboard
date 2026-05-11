@@ -39,7 +39,7 @@ const ChartsComponent = ({
 	];
 
 	return (
-		<div className='grid min-w-0 gap-4 lg:grid-cols-3 min-h-6 h-84'>
+		<div className='grid h-auto min-w-0 gap-4 min-h-6 lg:h-84 lg:grid-cols-3'>
 			<CardComponent title='Completion Trend'>
 				<div className='h-60 w-full min-w-0 min-h-6'>
 					<ResponsiveContainer width='100%' height='100%'>
@@ -54,8 +54,8 @@ const ChartsComponent = ({
 				</div>
 			</CardComponent>
 			<CardComponent title='Productivity Breakdown'>
-				<div className='space-y-4'>
-					<div className='flex justify-end gap-4 text-sm'>
+				<div className='space-y-2'>
+					<div className='flex justify-between gap-4 text-sm'>
 						{productivityData.map((item) => (
 							<div key={item.name} className='flex items-center gap-2'>
 								<div

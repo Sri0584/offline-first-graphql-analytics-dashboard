@@ -2,7 +2,6 @@ import {
 	Dispatch,
 	SetStateAction,
 	startTransition,
-	useEffect,
 	useMemo,
 	useState,
 } from "react";
@@ -63,7 +62,6 @@ const FilterSearchComponent = ({
 	setProjectStatus,
 	taskStatusFilter,
 	setTaskStatusFilter,
-	taskSearchQuery,
 	setTaskSearchQuery,
 	clearFilters,
 	hasActiveFilters,
@@ -96,50 +94,52 @@ const FilterSearchComponent = ({
 		clearFilters();
 	};
 	return (
-		<div className='grid gap-3 rounded-lg border bg-muted/20 p-3 md:grid-cols-3'>
-			<label className='space-y-1 text-sm font-medium'>
-				<span>Project status</span>
-				<Select value={projectStatus} onValueChange={handleProjectSelect}>
-					<SelectTrigger>
-						<SelectValue>
-							{getOptionLabel(projectStatusOptions, projectStatus)}
-						</SelectValue>
-					</SelectTrigger>
-					<SelectContent>
-						{projectStatusOptions.map((option) => (
-							<SelectItem key={option.value} value={option.value}>
-								{option.label}
-							</SelectItem>
-						))}
-					</SelectContent>
-				</Select>
-			</label>
-			<label className='space-y-1 text-sm font-medium'>
-				<span>Task status</span>
-				<Select value={taskStatusFilter} onValueChange={handleTaskSelect}>
-					<SelectTrigger>
-						<SelectValue>
-							{getOptionLabel(taskStatusOptions, taskStatusFilter)}
-						</SelectValue>
-					</SelectTrigger>
-					<SelectContent>
-						{taskStatusOptions.map((option) => (
-							<SelectItem key={option.label} value={option.value}>
-								{option.label}
-							</SelectItem>
-						))}
-					</SelectContent>
-				</Select>
-			</label>
-			<label className='space-y-1 text-sm font-medium'>
-				<span>Search Tasks</span>
-				<Input
-					className='rounded border px-2 py-1 text-sm'
-					placeholder='Search Task...'
-					value={inputValue}
-					onChange={(e) => handleSearchChange(e.target.value)}
-				/>
-			</label>
+		<div className='rounded-lg border bg-muted/20 p-3'>
+			<div className='grid gap-3 rounded-lg border bg-muted/20 p-3 sm:grid-cols-2 lg:grid-cols-3'>
+				<label className='space-y-1 text-sm font-medium'>
+					<span>Project status</span>
+					<Select value={projectStatus} onValueChange={handleProjectSelect}>
+						<SelectTrigger>
+							<SelectValue>
+								{getOptionLabel(projectStatusOptions, projectStatus)}
+							</SelectValue>
+						</SelectTrigger>
+						<SelectContent>
+							{projectStatusOptions.map((option) => (
+								<SelectItem key={option.value} value={option.value}>
+									{option.label}
+								</SelectItem>
+							))}
+						</SelectContent>
+					</Select>
+				</label>
+				<label className='space-y-1 text-sm font-medium'>
+					<span>Task status</span>
+					<Select value={taskStatusFilter} onValueChange={handleTaskSelect}>
+						<SelectTrigger>
+							<SelectValue>
+								{getOptionLabel(taskStatusOptions, taskStatusFilter)}
+							</SelectValue>
+						</SelectTrigger>
+						<SelectContent>
+							{taskStatusOptions.map((option) => (
+								<SelectItem key={option.label} value={option.value}>
+									{option.label}
+								</SelectItem>
+							))}
+						</SelectContent>
+					</Select>
+				</label>
+				<label className='space-y-1 text-sm font-medium'>
+					<span>Search Tasks</span>
+					<Input
+						className='rounded border px-2 py-1 text-sm'
+						placeholder='Search Task...'
+						value={inputValue}
+						onChange={(e) => handleSearchChange(e.target.value)}
+					/>
+				</label>
+			</div>
 			<div className='space-y-1 text-sm font-medium'>
 				<span>Filter actions</span>
 				<Button
