@@ -1,5 +1,5 @@
 import { graphql, HttpResponse, delay } from "msw";
-import type { TaskStatus } from "@/lib/graphql/types";
+
 import {
 	createMockProject,
 	createMockTask,
@@ -11,6 +11,7 @@ import {
 	updateMockProjectStatus,
 	updateMockTaskStatus,
 } from "./data";
+import { TaskStatus } from "@/app/generated/graphql/client";
 
 const GRAPHQL_ENDPOINT = "/api/graphql";
 const MOCK_LATENCY_MS = 450;
@@ -150,7 +151,7 @@ export const handlers = [
 		const clientMutationId =
 			typeof variables.clientMutationId === "string" ?
 				variables.clientMutationId
-			: null;
+			:	null;
 
 		if (!findMockProject(projectId)) {
 			return graphqlError("Project not found");

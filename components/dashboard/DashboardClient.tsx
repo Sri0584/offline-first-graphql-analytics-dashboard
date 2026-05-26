@@ -21,7 +21,6 @@ import {
 import type {
 	ProjectStatusFilter,
 	Task,
-	TaskStatus,
 	TaskStatusFilter,
 } from "@/lib/graphql/types";
 import type { Reference } from "@apollo/client/cache";
@@ -35,6 +34,7 @@ import {
 	filterProjectsByStatus,
 	type KanbanTask,
 } from "@/lib/dashboard-utils";
+import { TaskStatus } from "@/app/generated/graphql/client";
 
 const KanbanBoard = dynamic(() => import("./KanbanBoard"), {
 	loading: () => (
@@ -85,13 +85,10 @@ const upsertTaskRef = (
 const DashboardClient = () => {
 	const [isOffline, setIsOffline] = useState(false);
 
-	const { data, loading, error } = useQuery(
-		GET_PROJECTS,
-		{
-			fetchPolicy: "cache-and-network",
-			nextFetchPolicy: "cache-first",
-		},
-	);
+	const { data, loading, error } = useQuery(GET_PROJECTS, {
+		fetchPolicy: "cache-and-network",
+		nextFetchPolicy: "cache-first",
+	});
 	const [updateTaskStatus] = useMutation(UPDATE_TASK_STATUS);
 	const [analytics, setAnalytics] = useState(EMPTY_ANALYTICS);
 	const [titles, setTitles] = useState<Record<string, string>>({});
