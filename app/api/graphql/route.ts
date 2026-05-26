@@ -43,7 +43,7 @@ const resolvers = {
 					userId: userId,
 				},
 				include: {
-					tasks: true,
+					tasks: true, //to avoid 1+N qury problem
 				},
 				orderBy: {
 					createdAt: "desc",
@@ -141,7 +141,10 @@ const resolvers = {
 
 			return task;
 		},
-		updateTaskStatus: async (_: unknown, args: MutationUpdateTaskStatusArgs) => {
+		updateTaskStatus: async (
+			_: unknown,
+			args: MutationUpdateTaskStatusArgs,
+		) => {
 			return prisma.task.update({
 				where: { id: args.taskId },
 				data: { status: args.status },
