@@ -1,3 +1,6 @@
+// For more info, see https://github.com/storybookjs/eslint-plugin-storybook#configuration-flat-config-format
+import storybook from "eslint-plugin-storybook";
+
 import boundaries from "eslint-plugin-boundaries";
 import { recommended as boundariesRecommended } from "eslint-plugin-boundaries/config";
 import { defineConfig, globalIgnores } from "eslint/config";
@@ -62,57 +65,52 @@ const boundaryDependencyRules = [
   },
 ];
 
-const eslintConfig = defineConfig([
-  ...nextVitals,
-  ...nextTs,
-  {
-    files: ["**/*.{js,jsx,ts,tsx,mjs}"],
-    plugins: {
-      boundaries,
-    },
-    settings: {
-      ...boundariesRecommended.settings,
-      "boundaries/elements": boundaryElements,
-      "boundaries/include": [
-        "app/**/*",
-        "components/**/*",
-        "lib/**/*",
-        "mocks/**/*",
-        "workers/**/*",
-        "tests/**/*",
-        "*.config.{js,mjs,ts}",
-        "codegen.ts",
-        "tailwind.config.ts",
-      ],
-      "boundaries/ignore": ["app/generated/**/*"],
-      "import/resolver": {
-        typescript: {
-          project: "./tsconfig.json",
-        },
-        node: {
-          extensions: [".js", ".jsx", ".ts", ".tsx", ".mjs"],
-        },
+const eslintConfig = defineConfig([...nextVitals, ...nextTs, {
+  files: ["**/*.{js,jsx,ts,tsx,mjs}"],
+  plugins: {
+    boundaries,
+  },
+  settings: {
+    ...boundariesRecommended.settings,
+    "boundaries/elements": boundaryElements,
+    "boundaries/include": [
+      "app/**/*",
+      "components/**/*",
+      "lib/**/*",
+      "mocks/**/*",
+      "workers/**/*",
+      "tests/**/*",
+      "*.config.{js,mjs,ts}",
+      "codegen.ts",
+      "tailwind.config.ts",
+    ],
+    "boundaries/ignore": ["app/generated/**/*"],
+    "import/resolver": {
+      typescript: {
+        project: "./tsconfig.json",
+      },
+      node: {
+        extensions: [".js", ".jsx", ".ts", ".tsx", ".mjs"],
       },
     },
-    rules: {
-      ...boundariesRecommended.rules,
-      "boundaries/dependencies": [
-        "error",
-        {
-          default: "disallow",
-          rules: boundaryDependencyRules,
-        },
-      ],
-    },
   },
-  // Override default ignores of eslint-config-next.
-  globalIgnores([
-    // Default ignores of eslint-config-next:
-    ".next/**",
-    "out/**",
-    "build/**",
-    "next-env.d.ts",
-  ]),
-]);
+  rules: {
+    ...boundariesRecommended.rules,
+    "boundaries/dependencies": [
+      "error",
+      {
+        default: "disallow",
+        rules: boundaryDependencyRules,
+      },
+    ],
+  },
+}, // Override default ignores of eslint-config-next.
+globalIgnores([
+  // Default ignores of eslint-config-next:
+  ".next/**",
+  "out/**",
+  "build/**",
+  "next-env.d.ts",
+]), ...storybook.configs["flat/recommended"]]);
 
 export default eslintConfig;
